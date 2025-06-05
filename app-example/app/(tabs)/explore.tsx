@@ -7,6 +7,8 @@ import ParallaxScrollView from '@/components/ParallaxScrollView'
 import { ThemedText } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
 import { IconSymbol } from '@/components/ui/IconSymbol'
+import { ThemedText } from '@/app-example/components/ThemedText'
+import { Collapsible } from '@/app-example/components/Collapsible'
 
 export default function TabTwoScreen() {
     return (
