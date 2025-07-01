@@ -16,7 +16,7 @@ export default function Homework() {
   <View style={styles.container}>
     {error && <Text>Error: {error}</Text>}
     
-    {Homework && Homework.map((item) => (
+    {homework && homework.map((item) => (
       <View key={item.id}>
         <Text style={styles.item}>{item.Subjekt} {formatDate(item.due)}</Text>
         <Text>{item.to_do}</Text>
