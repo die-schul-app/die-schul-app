@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 export default function useHomework() {
   const [error, setError] = useState<string | null>(null)
-  const [Homework, setHomework] = useState<any[] | null>(null)
+  const [homework, setHomework] = useState<any[] | null>(null)
   
   async function getHomework() {
   const { data, error } = await supabase
