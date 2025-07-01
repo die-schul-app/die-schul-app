@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import AddButton from '../components/AddButton';
 
 export default function Homework() {
-  const { error, Homework } = useHomework();
+  const { error, homework } = useHomework();
   
   function formatDate(dateString: string) {
     const date = new Date(dateString);
