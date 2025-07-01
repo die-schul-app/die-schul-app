@@ -39,5 +39,5 @@ getHomework()
     fetchHomework()
   }, [])
 
-  return { error, Homework }
+  return { error, homework }
 }
