@@ -5,14 +5,21 @@ type TextBoxProps = {
   HolderPlace: string;
 } & TextInputProps;
 
+import { Colors } from '@/constants/Colors';
+
+import { useTheme } from '@/contexts/ThemeContext';
+
 const ModernTextBox = forwardRef<TextInput, TextBoxProps>((props, ref) => {
+  const { theme } = useTheme();
+  const colors = theme === 'light' ? Colors.light : Colors.dark;
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background, borderColor: colors.tint }]}>
       <TextInput
         ref={ref}
         placeholder={props.HolderPlace}
         placeholderTextColor={'gray'}
-        style={styles.input}
+        style={[styles.input, { color: colors.text }]}
         value={props.value}
         onChangeText={props.onChangeText}
       />
@@ -22,18 +29,15 @@ const ModernTextBox = forwardRef<TextInput, TextBoxProps>((props, ref) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
     padding: 8,
     borderWidth: 2,
-    borderColor: '#4B5563',
     borderRadius: 8,
     marginVertical: 8,
     width: '100%',
   },
   input: {
     fontSize: 16,
-    color: '#1F2937',
-    width: '100%',  
+    width: '100%',
   },
 });
 

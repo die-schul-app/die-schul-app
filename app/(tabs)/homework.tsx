@@ -1,20 +1,24 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native'
-import AddButton from '@/components/Buttons/AddButton'
-import HomeworkBox from '@/components/HomeworkBox'
-import getHomework from '@/service/getHomework'
-import formatDate from '@/service/Date/formatDate'
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import AddButton from '@/components/Buttons/AddButton';
+import HomeworkBox from '@/components/HomeworkBox';
+import getHomework from '@/service/getHomework';
+import formatDate from '@/service/Date/formatDate';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Colors } from '@/constants/Colors';
 
 export default function Homework() {
-    const {error, Homework} = getHomework()
+    const { theme } = useTheme();
+    const colors = theme === 'light' ? Colors.light : Colors.dark;
+    const { error, Homework } = getHomework();
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             {error && <Text>Error: {error}</Text>}
 
             <FlatList
                 data={Homework}
-                keyExtractor={( item ) => item.id.toString()}
-                renderItem={( {item} ) => (
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
                     <HomeworkBox
                         Subject={item.Subjekt}
                         Text={item.to_do}
@@ -24,9 +28,9 @@ export default function Homework() {
                 contentContainerStyle={styles.listContent}
             />
 
-            <AddButton/>
+            <AddButton />
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -37,4 +41,4 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingBottom: 100,
     },
-})
+});
