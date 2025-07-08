@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
         height: 60,
         borderRadius: 30,
         position: 'absolute',
-        bottom: 5,
-        right: 5,
+        bottom: 20,
+        right: 20,
         elevation: 8,
     },
     button: {
