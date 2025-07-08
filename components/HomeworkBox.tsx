@@ -1,16 +1,14 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import Threedots from '@/components/Buttons/Threedots'
+import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
 
 type BoxProps = {
     Subject: string;
     Text: string;
     date: string;
 };
-
-import { Colors } from '@/constants/Colors';
-
-import { useTheme } from '@/contexts/ThemeContext';
 
 const HomeworkBox = (prop: BoxProps) => {
     const { theme } = useTheme();
