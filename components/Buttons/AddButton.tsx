@@ -1,13 +1,13 @@
-import React, { useRef, useState } from 'react'
+import ModernTextBox from '@/components/ModernTextBox'
+import { Colors } from '@/constants/Colors'
+import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
+import { getCurrentDate } from '@/service/dateUtils'
 import insertHomework from '@/service/insertHomework'
+import { FontAwesome6 } from '@expo/vector-icons'
+import React, { useRef, useState } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
-import { FontAwesome6 } from '@expo/vector-icons'
-import ModernTextBox from '@/components/ModernTextBox'
-import getCurrentDate from '@/service/Date/getCurrentDate'
-import { Colors } from '@/constants/Colors'
-import { useTheme } from '@/contexts/ThemeContext'
-import { useAuth } from '@/contexts/AuthContext'
 
 const AddButton = () => {
     const {theme} = useTheme()

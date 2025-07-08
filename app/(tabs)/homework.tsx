@@ -1,17 +1,17 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
 import AddButton from '@/components/Buttons/AddButton';
 import HomeworkBox from '@/components/HomeworkBox';
-import { getHomework } from '@/service/getHomework';
-import formatDate from '@/service/Date/formatDate';
+import { { Colors } } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Colors } from '@/constants/Colors';
+import { formatDate } from '@/service/dateUtils';
+import getHomework from '@/service/getHomework';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 
 export default function Homework() {
-    const { theme } = useTheme();
-    const colors = theme === 'light' ? Colors.light : Colors.dark;
-    const { user } = useAuth();
+  const { theme } = useTheme();
+  const colors = theme === 'light' ? Colors.light : Colors.dark;
+  const { user } = useAuth();
     const [homework, setHomework] = useState<any[] | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -30,34 +30,34 @@ export default function Homework() {
         fetchHomework();
     }, [user]);
 
-    return (
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-            {error && <Text>Error: {error}</Text>}
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {error && <Text>Error: {error}</Text>}
 
-            <FlatList
-                data={homework}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                    <HomeworkBox
-                        Subject={item.Subjekt}
-                        Text={item.to_do}
-                        date={formatDate(item.due)}
-                    />
-                )}
-                contentContainerStyle={styles.listContent}
-            />
+      <FlatList
+        data={homework}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <HomeworkBox
+            Subject={item.Subjekt}
+            Text={item.to_do}
+            date={formatDate(item.due)}
+          />
+        )}
+        contentContainerStyle={styles.listContent}
+      />
 
-            <AddButton />
-        </View>
-    );
+      <AddButton />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    listContent: {
-        padding: 20,
-        paddingBottom: 100,
-    },
+  container: {
+    flex: 1,
+  },
+  listContent: {
+    padding: 20,
+    paddingBottom: 100,
+  },
 });

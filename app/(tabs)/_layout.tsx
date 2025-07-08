@@ -1,8 +1,8 @@
+import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Colors } from '@/constants/Colors';
 
 function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
@@ -30,17 +30,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="homework"
-        options={{
-          title: 'Homework',
-          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="schedule"
         options={{
           title: 'Schedule',
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="homework"
+        options={{
+          title: 'Homework',
+          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
         }}
       />
       <Tabs.Screen

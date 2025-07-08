@@ -99,7 +99,8 @@ export function useDSB() {
     
     try {
       const client = new DSBClient(username, password);
-      await client.fetchToken();
+      // Test authentication by trying to fetch timetable
+      await client.getTimetable();
       
       // Save credentials
       const credentials: DSBCredentials = { username, password };
@@ -182,7 +183,7 @@ export function useDSB() {
       await AsyncStorage.removeItem(DSB_CREDENTIALS_KEY);
       await AsyncStorage.removeItem(DSB_CACHE_KEY);
       
-      dsbClient?.clearToken();
+      dsbClient?.clearCredentials();
       setDsbClient(null);
       
       setState({
