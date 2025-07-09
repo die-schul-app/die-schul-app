@@ -7,8 +7,12 @@ const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
 
 export const useTheme = () => useContext(ThemeContext);
 
-export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light');
+type ThemeProviderProps = {
+  children: React.ReactNode;
+};
+
+export const ThemeProvider = ({ children}: ThemeProviderProps) => {
+  const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
     const fetchTheme = async () => {
@@ -24,11 +28,6 @@ export const ThemeProvider = ({ children }) => {
     setTheme(newTheme);
     saveTheme(newTheme);
   };
-
-  const themeColors = useMemo(() => {
-    return theme === 'light' ? Colors.light : Colors.dark;
-  }, [theme]);
-
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}

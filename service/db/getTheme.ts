@@ -9,8 +9,8 @@ export const getTheme = async () => {
 
   if (error || !data) {
     console.error('Error fetching theme or no theme set:', error);
-    return 'light'; // Default theme
+    return 'dark';
   }
 
-  return data.theme || 'light';
+  return data.theme || 'dark';
 };

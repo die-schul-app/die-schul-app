@@ -5,9 +5,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesome6 } from '@expo/vector-icons'
 import ModernTextBox from '@/components/ModernTextBox'
 import getCurrentDate from '@/service/Date/getCurrentDate'
-
 import { Colors } from '@/constants/Colors';
-
 import { useTheme } from '@/contexts/ThemeContext';
 
 const AddButton = () => {
