@@ -1,10 +1,18 @@
-import { StyleSheet, Text, View, Switch } from 'react-native';
+import { StyleSheet, Text, View, Switch, Pressable } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Colors } from '@/constants/Colors';
+import { useRouter } from 'expo-router';
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
   const colors = theme === 'light' ? Colors.light : Colors.dark;
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // In a real app, you would also clear the session/user from AuthContext here
+    // For now, just navigate to login
+    router.replace('/login');
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -21,6 +29,16 @@ export default function SettingsScreen() {
             thumbColor={theme === 'dark' ? '#f5dd4b' : '#f4f3f4'}
           />
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Account</Text>
+        <Pressable style={({ pressed }) => [
+          styles.logoutButton,
+          { backgroundColor: pressed ? colors.tint : colors.primary },
+        ]} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -52,5 +70,16 @@ const styles = StyleSheet.create({
   },
   rowText: {
     fontSize: 16,
+  },
+  logoutButton: {
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });

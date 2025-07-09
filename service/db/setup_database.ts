@@ -1,4 +1,4 @@
-import supabase from '@/config/supabaseClient'
+import { supabase } from '@/config/supabaseClient'
 
 async function createSettingsTable() {
     const {

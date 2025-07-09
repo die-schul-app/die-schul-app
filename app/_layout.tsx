@@ -1,10 +1,31 @@
-import { Stack } from 'expo-router';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { Stack } from 'expo-router'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+
+const InitialLayout = () => {
+    const {session, user} = useAuth()
+
+    return (
+        <>
+            {session && user ? (
+                <Stack screenOptions={{headerShown: false}}>
+                    <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+                </Stack>
+            ) : (
+                <Stack screenOptions={{headerShown: false}}>
+                    <Stack.Screen name="login" options={{headerShown: false}}/>
+                </Stack>
+            )}
+        </>
+    )
+}
 
 export default function RootLayout() {
-  return (
-    <ThemeProvider>
-      <Stack screenOptions={{ headerShown: false }} />
-    </ThemeProvider>
-  );
+    return (
+        <AuthProvider>
+            <ThemeProvider>
+                <InitialLayout/>
+            </ThemeProvider>
+        </AuthProvider>
+    )
 }

@@ -5,29 +5,33 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesome6 } from '@expo/vector-icons'
 import ModernTextBox from '@/components/ModernTextBox'
 import getCurrentDate from '@/service/Date/getCurrentDate'
-import { Colors } from '@/constants/Colors';
-import { useTheme } from '@/contexts/ThemeContext';
+import { Colors } from '@/constants/Colors'
+import { useTheme } from '@/contexts/ThemeContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 const AddButton = () => {
-    const { theme } = useTheme();
-    const colors = theme === 'light' ? Colors.light : Colors.dark;
-    const [modalVisible, setModalVisible] = useState(false);
-    const [inputText, setInputText] = useState('');
-    const [inputAssign, setInputAssign] = useState('');
-    const [inputDate] = useState(getCurrentDate());
-    const [error, setError] = useState('');
-    const inputRef = useRef(null);
+    const {theme} = useTheme()
+    const colors = theme === 'light' ? Colors.light : Colors.dark
+    const {user} = useAuth()
+    const [modalVisible, setModalVisible] = useState(false)
+    const [inputText, setInputText] = useState('')
+    const [inputAssign, setInputAssign] = useState('')
+    const [inputDate] = useState(getCurrentDate())
+    const inputRef = useRef(null)
 
     const handlePress = () => {
         if (inputText && inputAssign !== '') {
-            insertHomework(inputText, inputDate, inputAssign);
-            setModalVisible(false);
-            setInputText('');
-            setError('');
+            if (user) {
+                insertHomework(user, inputText, inputDate, inputAssign).then()
+                setModalVisible(false)
+                setInputText('')
+            } else {
+                // Handle the case where the user is not logged in
+            }
         } else {
-            setError('Please fill in all fields.');
+            // Handle the case where the fields are not filled
         }
-    };
+    }
 
     return (
         <SafeAreaProvider>
@@ -43,11 +47,11 @@ const AddButton = () => {
                         onPress={() => setModalVisible(false)}
                     >
                         <Pressable
-                            style={[styles.modalView, { backgroundColor: colors.background }]}
-                            onPress={(e) => e.stopPropagation()}
+                            style={[styles.modalView, {backgroundColor: colors.background}]}
+                            onPress={( e ) => e.stopPropagation()}
                         >
                             <View style={styles.inputGroup}>
-                                <Text style={[styles.infoText, { color: colors.text }]}>Subject</Text>
+                                <Text style={[styles.infoText, {color: colors.text}]}>Subject</Text>
                                 <ModernTextBox
                                     HolderPlace="Type your Subject"
                                     value={inputText}
@@ -57,7 +61,7 @@ const AddButton = () => {
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={[styles.infoText, { color: colors.text }]}>Homework</Text>
+                                <Text style={[styles.infoText, {color: colors.text}]}>Homework</Text>
                                 <ModernTextBox
                                     HolderPlace="Type your Assignment"
                                     value={inputAssign}
@@ -67,7 +71,7 @@ const AddButton = () => {
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={[styles.infoText, { color: colors.text }]}>Date</Text>
+                                <Text style={[styles.infoText, {color: colors.text}]}>Date</Text>
                                 <ModernTextBox
                                     HolderPlace=""
                                     value={inputDate}
@@ -76,25 +80,25 @@ const AddButton = () => {
                             </View>
 
                             <Pressable
-                                style={[styles.button, styles.buttonClose, { backgroundColor: colors.tint }]}
+                                style={[styles.button, styles.buttonClose, {backgroundColor: colors.tint}]}
                                 onPress={handlePress}
                             >
-                                <Text style={[styles.textStyle, { color: colors.background }]}>Add Homework</Text>
+                                <Text style={[styles.textStyle, {color: colors.background}]}>Add Homework</Text>
                             </Pressable>
                         </Pressable>
                     </Pressable>
                 </Modal>
 
                 <Pressable
-                    style={[styles.addButton, { backgroundColor: colors.tint }]}
+                    style={[styles.addButton, {backgroundColor: colors.tint}]}
                     onPress={() => setModalVisible(true)}
                 >
-                    <FontAwesome6 name="plus" size={24} color={colors.background} />
+                    <FontAwesome6 name="plus" size={24} color={colors.background}/>
                 </Pressable>
             </SafeAreaView>
         </SafeAreaProvider>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -149,6 +153,7 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: 10,
     },
-});
+})
 
 export default AddButton
+

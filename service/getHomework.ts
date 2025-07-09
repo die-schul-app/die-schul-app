@@ -1,50 +1,21 @@
-import supabase from '@/config/supabaseClient'
-import { useEffect, useState } from 'react'
+import { supabase } from '@/config/supabaseClient'
+import { User } from '@supabase/supabase-js'
 
+export const getHomework = async ( user: User ) => {
+    if (!user) {
+        return {error: 'User not authenticated', Homework: null}
+    }
 
-export default function getHomework(){
-  const [error, setError] = useState<string | null>(null)
-  const [Homework, setHomework] = useState<any[] | null>(null)
-
-
-   const fetchHomework = async () => {
-    const { data, error } = await supabase.from('Homework').select();
+    const {data, error} = await supabase
+        .from('Homework')
+        .select('*')
+        .eq('user_id', user.id)
 
     if (error) {
-      setError('Couldnt fetch homework');
-      setHomework(null);
-      console.error(error);
+        return {error: 'Couldnt fetch homework', Homework: null}
     } else {
-      setHomework(data);
-      setError(null);
+        return {error: null, Homework: data}
     }
-  };
-
-  useEffect(() => {
-    fetchHomework();
-
-    const channel = supabase
-      .channel('homework-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', 
-          schema: 'public',
-          table: 'Homework',
-        },
-        (payload) => {
-          console.log('Change received!', payload);
-          fetchHomework();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  return { error, Homework };
 }
 
 

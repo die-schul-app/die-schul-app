@@ -1,13 +1,11 @@
 import React, { forwardRef } from 'react';
 import { View, StyleSheet, TextInput, TextInputProps } from 'react-native';
+import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
 
 type TextBoxProps = {
   HolderPlace: string;
 } & TextInputProps;
-
-import { Colors } from '@/constants/Colors';
-
-import { useTheme } from '@/contexts/ThemeContext';
 
 const ModernTextBox = forwardRef<TextInput, TextBoxProps>((props, ref) => {
   const { theme } = useTheme();
@@ -26,6 +24,8 @@ const ModernTextBox = forwardRef<TextInput, TextBoxProps>((props, ref) => {
     </View>
   );
 });
+
+ModernTextBox.displayName = 'ModernTextBox';
 
 const styles = StyleSheet.create({
   container: {
