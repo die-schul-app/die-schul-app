@@ -7,10 +7,9 @@ export const getTheme = async ( user: User | null ) => {
     }
 
     const {data, error} = await supabase
-        .from('user_settings')
+        .from('Homework')
         .select('theme')
         .eq('user_id', user.id)
-        .single()
 
     if (error || !data) {
         console.error('Error fetching theme or no theme set:', error)
