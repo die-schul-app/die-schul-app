@@ -9,8 +9,6 @@ export default function SettingsScreen() {
   const router = useRouter();
 
   const handleLogout = () => {
-    // In a real app, you would also clear the session/user from AuthContext here
-    // For now, just navigate to login
     router.replace('/login');
   };
 
