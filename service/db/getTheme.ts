@@ -1,20 +1,21 @@
 import { supabase } from '@/config/supabaseClient'
-import { User } from '@supabase/supabase-js'
+import { User } from '@supabase/supabase-js';
 
-export const getTheme = async ( user: User | null ) => {
+export const getTheme = async (user: User | null): Promise<'light' | 'dark'> => {
     if (!user) {
-        return 'dark'
+        return 'dark'; 
     }
 
-    const {data, error} = await supabase
-        .from('Homework')
-        .select('theme')
+    const { data, error } = await supabase
+        .from('user_settings')
+        .select('dark_mode')
         .eq('user_id', user.id)
+        .single();
 
     if (error || !data) {
-        console.error('Error fetching theme or no theme set:', error)
-        return 'dark'
+        console.error('Error fetching theme or no settings found:', error);
+        return 'dark';
     }
-
-    return data.theme || 'dark'
+    
+    return data.dark_mode ? 'dark' : 'light';
 }

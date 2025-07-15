@@ -7,7 +7,7 @@ export const getHomework = async ( user: User ) => {
     }
 
     const {data, error} = await supabase
-        .from('Homework')
+        .from('homework')
         .select('*')
         .eq('user_id', user.id)
 
