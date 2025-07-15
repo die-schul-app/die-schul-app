@@ -231,7 +231,6 @@ export default function StundenplanApp() {
   );
 }
 
-// === Styles ===
 
 const styles = {
   container: {
