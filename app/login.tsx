@@ -1,9 +1,12 @@
-import { Colors } from '@/constants/Colors'; // Import Colors
-import { useTheme } from '@/contexts/ThemeContext'; // Import useTheme
+import { AuthInput } from '@/components/AuthForm';
+import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
+import { signInWithGoogle } from '@/service/auth/google_auth';
+import { loginWithEmail } from '@/service/auth/login';
 import { makeRedirectUri, useAuthRequest } from 'expo-auth-session';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { supabase } from '../config/supabaseClient';
 
 const Login = () => {
@@ -60,50 +63,43 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
-    console.log('Attempting to login with email:', email);
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password.');
+      return;
+    }
+    const { error } = await loginWithEmail(email, password);
     if (error) {
-      Alert.alert('Login Error', error.message); 
+      Alert.alert('Login Error', error.message);
     } else {
       router.replace('/(tabs)/homework');
     }
   };
 
   const handleGoogleLogin = async () => {
-    try {
-      console.log('Initiating Google Login...');
-      await promptAsync();
-    } catch (error: any) {
-      console.error('Google Sign-In error:', error);
-      Alert.alert('Google Login Error', error.message || 'An error occurred during Google login');
+    const { error } = await signInWithGoogle();
+    if (error) {
+      Alert.alert('Google Login Error', error.message);
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Welcome!</Text>
+      <Text style={[styles.title, { color: colors.text }]}>Welcome Back!</Text>
 
-      <TextInput
-        style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-        placeholder="Email"
-        placeholderTextColor={colors.placeholder}
+      <AuthInput
         value={email}
         onChangeText={setEmail}
+        placeholder="Email"
+        colorConfig={colors}
         autoCapitalize="none"
         keyboardType="email-address"
       />
-      <TextInput
-        style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-        placeholder="Password"
-        placeholderTextColor={colors.placeholder}
+      <AuthInput
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
+        placeholder="Password"
+        secure
+        colorConfig={colors}
       />
 
       <Pressable
@@ -119,12 +115,17 @@ const Login = () => {
       <Pressable
         style={({ pressed }) => [
           styles.button,
-          styles.googleButton, // Specific style for Google button
-          { backgroundColor: pressed ? colors.tint : colors.secondary }, // Use secondary color for Google
+          { backgroundColor: pressed ? '#3a78d9' : '#4285F4' },
         ]}
         onPress={handleGoogleLogin}
       >
         <Text style={styles.buttonText}>Login with Google</Text>
+      </Pressable>
+
+      <Pressable style={styles.linkContainer} onPress={() => router.push('/signup')}>
+        <Text style={[styles.link, { color: colors.tint }]}>
+          Don't have an account? <Text style={{ color: 'rgba(1, 175, 255, 1)' }}>Sign Up</Text>
+        </Text>
       </Pressable>
     </View>
   );
@@ -142,14 +143,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 40,
   },
-  input: {
-    width: '100%',
-    padding: 15,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 15,
-    fontSize: 16,
-  },
   button: {
     width: '100%',
     padding: 15,
@@ -162,8 +155,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  googleButton: {
-    // Additional styling for Google button if needed
+  linkContainer: {
+    marginTop: 15,
+  },
+  link: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
 

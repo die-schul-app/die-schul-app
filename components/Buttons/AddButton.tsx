@@ -22,14 +22,14 @@ const AddButton = () => {
     const handlePress = () => {
         if (inputText && inputAssign !== '') {
             if (user) {
-                insertHomework(user, inputText, inputDate, inputAssign).then()
+                insertHomework(user.id , inputText, inputDate, inputAssign).then()
                 setModalVisible(false)
                 setInputText('')
             } else {
-                // Handle the case where the user is not logged in
+                console.log("You're not logged in")
             }
         } else {
-            // Handle the case where the fields are not filled
+            console.log("Pls fill out all fields")
         }
     }
 
