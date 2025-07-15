@@ -5,18 +5,12 @@ import 'react-native-url-polyfill/auto'
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.EXPO_PUBLIC_ANON_KEY!
 
-let supabase: any;
-
-if (typeof window !== 'undefined') {
-  supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      storage: AsyncStorage,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false,
-    },
-  });
-}
-
-export { supabase }
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
 

@@ -1,9 +1,19 @@
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { Stack } from 'expo-router'
+import { ActivityIndicator, View } from 'react-native'
 
 const InitialLayout = () => {
-    const {session, user} = useAuth()
+    const { session, user, loading } = useAuth()
+
+    // Show loading spinner while checking authentication state
+    if (loading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
+            </View>
+        )
+    }
 
     return (
         <>
@@ -14,6 +24,7 @@ const InitialLayout = () => {
             ) : (
                 <Stack screenOptions={{headerShown: false}}>
                     <Stack.Screen name="login" options={{headerShown: false}}/>
+                    <Stack.Screen name="signup" options={{headerShown: false}}/>
                 </Stack>
             )}
         </>
