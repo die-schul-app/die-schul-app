@@ -1,12 +1,12 @@
 import AddButton from '@/components/Buttons/AddButton';
 import HomeworkBox from '@/components/HomeworkBox';
-import { { Colors } } from '@/constants/Colors';
+import { Colors } from '@/constants/Colors';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatDate } from '@/service/dateUtils';
-import getHomework from '@/service/getHomework';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { useAuth } from '@/contexts/AuthContext';
+import { getHomework } from '@/service/getHomework';
 import { useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 export default function Homework() {
   const { theme } = useTheme();
