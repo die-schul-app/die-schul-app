@@ -1,6 +1,6 @@
-import { Stack } from 'expo-router'
-import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+import { Stack } from 'expo-router'
 
 const InitialLayout = () => {
     const {session, user} = useAuth()
