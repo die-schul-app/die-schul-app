@@ -12,9 +12,9 @@ import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 type HomeworkType = {
     id: number;
-    Subjekt: string;
+    subject: string;
     to_do: string;
-    due: string;
+    due_date: string; 
 };
 
 export default function Homework() {
@@ -45,7 +45,7 @@ export default function Homework() {
                 {
                     event: '*',
                     schema: 'public',
-                    table: 'Homework',
+                    table: 'homework',
                 },
                 (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
                     console.log('Database change received!', payload);
@@ -72,10 +72,10 @@ export default function Homework() {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <HomeworkBox
-                        Subject={item.Subjekt}
+                        Subject={item.subject}
                         Text={item.to_do}
-                        date={formatDate(item.due)}
-                    />
+                        date={formatDate(item.due_date)}
+/>
                 )}
                 contentContainerStyle={styles.listContent}
             />

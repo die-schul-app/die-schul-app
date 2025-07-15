@@ -1,20 +1,22 @@
 import { supabase } from '@/config/supabaseClient'
-import { User } from '@supabase/supabase-js'
+import { User } from '@supabase/supabase-js';
 
-export const setTheme = async ( user: User | null, theme: string ) => {
+export const setTheme = async (user: User | null, theme: 'light' | 'dark') => {
     if (!user) {
-        console.error('User not authenticated')
-        return
+        console.error('User not authenticated');
+        return;
     }
 
-    const {data, error} = await supabase
+    const isDarkMode = theme === 'dark';
+
+    const { data, error } = await supabase
         .from('user_settings')
-        .upsert({user_id: user.id, theme})
-        .select()
+        .update({ dark_mode: isDarkMode })
+        .eq('user_id', user.id)
+        .select();
 
     if (error) {
-        console.error('Error setting theme:', error)
+        console.error('Error setting theme:', error);
     }
-
-    return data
+    return data;
 }
