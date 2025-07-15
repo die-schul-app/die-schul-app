@@ -110,7 +110,7 @@ export default function StundenplanApp() {
 
   return (
     <div style={currentStyles.container}>
-      <h1 style={currentStyles.header}>📘 Schul-App</h1>
+      <h1 style={currentStyles.header}>📘 Die Schul App.</h1>
 
       <div style={currentStyles.toggleRow}>
         <button
