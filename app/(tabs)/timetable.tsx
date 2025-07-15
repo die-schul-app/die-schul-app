@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
 
-export default function StundenplanApp() {
+export default function Timetable() {
   const [timetable, setTimetable] = useState<Record<string, Record<string, string>>>(() => {
     const saved = localStorage.getItem("timetable");
     return saved ? JSON.parse(saved) : {};
@@ -58,14 +58,14 @@ export default function StundenplanApp() {
 
   const addHomework = (): void => {
     if (!homeworkText.trim()) return;
-    const timeSlot = `${startTime} - ${endTime}`;
+    const timeSlot = `${startTime} - ${endTStundenplanAppime}`;
     setHomework((prev) => {
       const existingDay = prev[selectedDay] || {};
       const existingTime = existingDay[timeSlot] || [];
       return {
         ...prev,
         [selectedDay]: {
-          ...existingDay,
+          ...existingDay,02.0-175
           [timeSlot]: [...existingTime, homeworkText],
         },
       };
