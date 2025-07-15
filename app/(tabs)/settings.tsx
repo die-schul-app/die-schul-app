@@ -4,13 +4,25 @@ import {useTheme} from '@/contexts/ThemeContext';
 import {logout} from '@/service/auth/logout';
 import {testPersistentAuth} from '@/service/auth/testPersistentAuth';
 import {useRouter} from 'expo-router';
-import {Alert, Pressable, StyleSheet, Switch, Text, View} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Alert, Pressable, StyleSheet, Switch, Text, TextInput, View} from 'react-native';
+import {useEffect, useState} from 'react';
 
 export default function SettingsScreen() {
     const {theme, toggleTheme} = useTheme();
     const colors = theme === 'light' ? Colors.light : Colors.dark;
     const router = useRouter();
     const {user} = useAuth();
+    const [selectedClass, setSelectedClass] = useState<string>('');
+    const [loadingClass, setLoadingClass] = useState(true);
+
+    useEffect(() => {
+        (async () => {
+            const storedClass = await AsyncStorage.getItem('selectedClass');
+            if (storedClass) setSelectedClass(storedClass);
+            setLoadingClass(false);
+        })();
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -33,6 +45,11 @@ export default function SettingsScreen() {
         } catch (error) {
             Alert.alert('Test Failed', 'Check console for error details');
         }
+    };
+
+    const handleClassChange = async (value: string) => {
+        setSelectedClass(value);
+        await AsyncStorage.setItem('selectedClass', value);
     };
 
     return (
@@ -58,6 +75,26 @@ export default function SettingsScreen() {
                         thumbColor={theme === 'dark' ? '#f5dd4b' : '#f4f3f4'}
                     />
                 </View>
+            </View>
+
+            <View style={styles.section}>
+                <Text style={[styles.sectionTitle, {color: colors.text}]}>Class Selection</Text>
+                <TextInput
+                    style={{
+                        borderColor: colors.text,
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        padding: 8,
+                        color: colors.text,
+                        backgroundColor: colors.secondary,
+                        marginBottom: 10,
+                    }}
+                    placeholder="Enter your class (e.g. 10A, 5B)"
+                    placeholderTextColor={colors.text + '99'}
+                    value={selectedClass}
+                    onChangeText={handleClassChange}
+                    editable={!loadingClass}
+                />
             </View>
 
             <View style={styles.section}>
