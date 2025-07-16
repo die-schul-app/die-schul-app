@@ -1,6 +1,4 @@
 import DSBLoginModal from '@/components/DSBLoginModal';
-import {ScheduleItem as DSBScheduleItem} from '@/service/DSB/TimeTable';
-import {useDSB} from '@/service/useDSB';
 import {FontAwesome} from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '@/contexts/ThemeContext';
@@ -8,34 +6,19 @@ import {Colors} from '@/constants/Colors';
 import {useEffect, useState} from 'react';
 import {ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View} from 'react-native';
 import ScheduleBox from '@/components/ScheduleBox';
+import {DSBClient} from '@/service/DSB/DSBClient';
+import {ScheduleItem} from "@/service/DSB/TimeTable";
 
-// Mock data for schedule - fallback if DSB is not configured
-const mockSchedule = [
-    {id: '1', subject: 'Mathematics', time: '08:00 - 09:30', room: 'Room 101', period: 1, day: 'Monday'},
-    {id: '2', subject: 'English', time: '09:45 - 11:15', room: 'Room 203', period: 2, day: 'Monday'},
-    {id: '3', subject: 'Physics', time: '11:30 - 13:00', room: 'Lab 1', period: 3, day: 'Monday'},
-    {id: '4', subject: 'History', time: '14:00 - 15:30', room: 'Room 105', period: 4, day: 'Monday'},
-];
-
-type LocalScheduleItem = {
-    id: string;
-    subject: string;
-    time: string;
-    room: string;
-    teacher?: string;
-    period: number;
-    day: string;
-    class?: string; // added class property
-};
-
-const ScheduleItemCard = ({item}: { item: LocalScheduleItem }) => (
+const ScheduleItemCard = ({item}: { item: ScheduleItem }) => (
     <ScheduleBox
         subject={item.subject}
-        time={item.time}
         room={item.room}
         teacher={item.teacher}
-        period={item.period}
+        periodStart={item.periodStart}
+        periodEnd={item.periodEnd}
         className={item.class}
+        message={item.message}
+        time={item.time}
     />
 );
 
@@ -53,11 +36,13 @@ const LoginPrompt = ({onLoginPress}: { onLoginPress: () => void }) => (
 );
 
 export default function ScheduleScreen() {
-    const [schedule, setSchedule] = useState<LocalScheduleItem[]>([]);
+    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedClass, setSelectedClass] = useState<string>('');
-    const [loadingClass, setLoadingClass] = useState(true);
-    const dsb = useDSB();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [dsbClient, setDsbClient] = useState<DSBClient | null>(null);
     const {theme} = useTheme();
     const colors = theme === 'light' ? Colors.light : Colors.dark;
 
@@ -65,36 +50,45 @@ export default function ScheduleScreen() {
         (async () => {
             const storedClass = await AsyncStorage.getItem('selectedClass');
             setSelectedClass(storedClass || '');
-            setLoadingClass(false);
+            // Try to load credentials and auto-login
+            const creds = await AsyncStorage.getItem('dsb_credentials');
+            if (creds) {
+                const {username, password} = JSON.parse(creds);
+                await handleLogin(username, password);
+            }
         })();
     }, []);
 
     useEffect(() => {
-        if (dsb.isAuthenticated && dsb.timetable) {
-            // Convert DSB schedule items to local format
-            let todaysSchedule = dsb.getTodaysSchedule().map((item: DSBScheduleItem): LocalScheduleItem => ({
-                id: item.id,
-                subject: item.subject,
-                time: item.time,
-                room: item.room,
-                teacher: item.teacher,
-                period: item.period,
-                day: item.day,
-                class: item.class, // assuming class property exists
-            }));
+        if (dsbClient) {
+            loadTodaysSchedule();
+        }
+    }, [selectedClass, dsbClient]);
+
+    const loadTodaysSchedule = async () => {
+        setIsLoading(true);
+        try {
+            const plans = await dsbClient!.getTimetables();
+            let todaysSchedule = dsbClient!.getTodaysSchedule();
             if (selectedClass) {
-                todaysSchedule = todaysSchedule.filter(item => (item.class || '').toLowerCase().includes(selectedClass.toLowerCase()));
+                todaysSchedule = todaysSchedule.filter(item =>
+                    (item.class || '').replace(/\s+/g, '').toLowerCase().includes(selectedClass.replace(/\s+/g, '').toLowerCase())
+                );
             }
             setSchedule(todaysSchedule);
-        } else if (!dsb.isAuthenticated) {
-            // Use mock data if not authenticated
-            setSchedule(mockSchedule);
+            setLastUpdated(new Date());
+        } catch (e) {
+            setSchedule([]);
         }
-    }, [selectedClass, dsb.isAuthenticated, dsb.timetable]);
+        setIsLoading(false);
+    };
 
     const handleRefresh = async () => {
-        if (dsb.isAuthenticated) {
-            await dsb.refreshTimetable();
+        if (dsbClient) {
+            setIsLoading(true);
+            await dsbClient.fetchTimetables();
+            await loadTodaysSchedule();
+            setIsLoading(false);
         }
     };
 
@@ -103,7 +97,21 @@ export default function ScheduleScreen() {
     };
 
     const handleLogin = async (username: string, password: string): Promise<boolean> => {
-        return await dsb.authenticate(username, password);
+        setIsLoading(true);
+        try {
+            const client = new DSBClient(username, password);
+            await client.fetchTimetables();
+            setDsbClient(client);
+            setIsAuthenticated(true);
+            await AsyncStorage.setItem('dsb_credentials', JSON.stringify({username, password}));
+            setShowLoginModal(false);
+            setIsLoading(false);
+            return true;
+        } catch (e) {
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            return false;
+        }
     };
 
     return (
@@ -113,53 +121,35 @@ export default function ScheduleScreen() {
                     <View style={styles.headerLeft}>
                         <Text style={styles.title}>Today's Schedule</Text>
                         <Text style={styles.date}>{new Date().toLocaleDateString()}</Text>
-                        {dsb.lastUpdated && (
+                        {lastUpdated && (
                             <Text style={styles.lastUpdated}>
-                                Last updated: {dsb.lastUpdated.toLocaleTimeString()}
+                                Last updated: {lastUpdated.toLocaleTimeString()}
                             </Text>
                         )}
                     </View>
-
                     <View style={styles.headerRight}>
-                        {dsb.isAuthenticated ? (
-                            <Pressable style={styles.refreshButton} onPress={handleRefresh} disabled={dsb.isLoading}>
-                                {dsb.isLoading ? (
+                        {isAuthenticated ? (
+                            <Pressable style={styles.refreshButton} onPress={handleRefresh} disabled={isLoading}>
+                                {isLoading ? (
                                     <ActivityIndicator size="small" color="#3B82F6"/>
                                 ) : (
                                     <FontAwesome name="refresh" size={20} color="#3B82F6"/>
                                 )}
                             </Pressable>
-                        ) : (
-                            <Pressable style={styles.loginIconButton} onPress={handleLoginPress}>
-                                <FontAwesome name="sign-in" size={20} color="#F59E0B"/>
-                            </Pressable>
-                        )}
+                        ) : null}
                     </View>
                 </View>
-
-                {dsb.error && (
-                    <View style={styles.errorContainer}>
-                        <Text style={styles.errorText}>{dsb.error}</Text>
-                    </View>
-                )}
-                {!dsb.isAuthenticated ? (
-                    <LoginPrompt onLoginPress={handleLoginPress}/>
-                ) : (
+                {isAuthenticated ? (
                     <FlatList
                         data={schedule}
-                        keyExtractor={(item) => item.id}
+                        keyExtractor={(_, i) => i.toString()}
                         renderItem={({item}) => <ScheduleItemCard item={item}/>}
-                        contentContainerStyle={styles.listContent}
-                        showsVerticalScrollIndicator={false}
-                        refreshing={dsb.isLoading}
-                        onRefresh={handleRefresh}
-                        ListEmptyComponent={
-                            <View style={styles.emptyContainer}>
-                                <FontAwesome name="calendar-o" size={48} color="#9CA3AF"/>
-                                <Text style={styles.emptyText}>No classes scheduled for today</Text>
-                            </View>
-                        }
+                        contentContainerStyle={{paddingBottom: 20}}
+                        ListEmptyComponent={<Text style={{color: colors.text, textAlign: 'center', marginTop: 40}}>No
+                            lessons for today.</Text>}
                     />
+                ) : (
+                    <LoginPrompt onLoginPress={handleLoginPress}/>
                 )}
             </View>
             <DSBLoginModal
@@ -177,100 +167,68 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     header: {
-        padding: 20,
-        paddingTop: 60,
-        backgroundColor: '#1F2937',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
+        marginBottom: 16,
     },
     headerLeft: {
         flex: 1,
     },
     headerRight: {
-        marginLeft: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#F9FAFB',
-        marginBottom: 4,
+        color: '#3B82F6',
     },
     date: {
         fontSize: 16,
-        color: '#9CA3AF',
+        color: '#6B7280',
+        marginTop: 2,
     },
     lastUpdated: {
         fontSize: 12,
-        color: '#6B7280',
-        marginTop: 4,
-    },
-    refreshButton: {
-        padding: 8,
-        borderRadius: 6,
-        backgroundColor: '#374151',
-    },
-    loginIconButton: {
-        padding: 8,
-        borderRadius: 6,
-        backgroundColor: '#374151',
-    },
-    errorContainer: {
-        backgroundColor: '#DC2626',
-        padding: 12,
-        marginHorizontal: 20,
-        marginTop: 10,
-        borderRadius: 6,
-    },
-    errorText: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        textAlign: 'center',
-    },
-    listContent: {
-        padding: 20,
+        color: '#9CA3AF',
+        marginTop: 2,
     },
     loginPrompt: {
         flex: 1,
-        justifyContent: 'center',
         alignItems: 'center',
-        padding: 40,
+        justifyContent: 'center',
+        marginTop: 40,
     },
     loginTitle: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
-        color: '#F9FAFB',
         marginTop: 16,
-        marginBottom: 8,
+        color: '#3B82F6',
     },
     loginText: {
         fontSize: 16,
-        color: '#9CA3AF',
+        color: '#6B7280',
+        marginTop: 8,
         textAlign: 'center',
-        marginBottom: 24,
-        lineHeight: 24,
+        marginHorizontal: 20,
     },
     loginButton: {
         backgroundColor: '#3B82F6',
         paddingHorizontal: 24,
-        paddingVertical: 12,
+        paddingVertical: 10,
         borderRadius: 8,
+        marginTop: 20,
     },
     loginButtonText: {
-        color: '#FFFFFF',
+        color: 'white',
+        fontWeight: 'bold',
         fontSize: 16,
-        fontWeight: '600',
     },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 40,
-    },
-    emptyText: {
-        fontSize: 16,
-        color: '#9CA3AF',
-        marginTop: 16,
-        textAlign: 'center',
+    refreshButton: {
+        marginLeft: 10,
+        padding: 8,
+        borderRadius: 8,
+        backgroundColor: '#E5E7EB',
     },
 });

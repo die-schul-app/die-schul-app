@@ -7,7 +7,7 @@ import {makeRedirectUri, useAuthRequest} from 'expo-auth-session';
 import {useRouter} from 'expo-router';
 import {useEffect, useState} from 'react';
 import {Alert, Pressable, StyleSheet, Text, View} from 'react-native';
-import {supabase} from '../config/supabaseClient';
+import {supabase} from '@/config/supabaseClient';
 
 const Login = () => {
     const [email, setEmail] = useState('');

@@ -4,17 +4,29 @@ import {Colors} from '@/constants/Colors';
 import {useTheme} from '@/contexts/ThemeContext';
 
 interface ScheduleBoxProps {
+    periodStart: number;
+    periodEnd: number;
+    teacher: string;
     subject: string;
-    time: string;
     room: string;
-    teacher?: string;
-    period: number;
+    message?: string;
     className?: string;
+    time?: string;
 }
 
-const ScheduleBox: React.FC<ScheduleBoxProps> = ({subject, time, room, teacher, period, className}) => {
+const ScheduleBox: React.FC<ScheduleBoxProps> = ({
+                                                     subject,
+                                                     room,
+                                                     teacher,
+                                                     periodStart,
+                                                     periodEnd,
+                                                     message,
+                                                     className,
+                                                     time
+                                                 }) => {
     const {theme} = useTheme();
     const colors = theme === 'light' ? Colors.light : Colors.dark;
+    const period = periodEnd && periodEnd !== periodStart ? `${periodStart} - ${periodEnd}` : `${periodStart}`;
 
     return (
         <View style={[styles.square, {backgroundColor: colors.background}]}>
@@ -30,7 +42,7 @@ const ScheduleBox: React.FC<ScheduleBoxProps> = ({subject, time, room, teacher, 
                 borderColor: colors.tint,
                 borderWidth: 1
             }]}>
-                <Text style={[styles.time, {color: colors.text}]}>{time}</Text>
+                {time && <Text style={[styles.time, {color: colors.text}]}>{time}</Text>}
                 <Text style={[styles.room, {color: colors.text}]}>{room}</Text>
                 {teacher && <Text style={[styles.teacher, {color: colors.text}]}>{teacher}</Text>}
                 {className && <Text style={[styles.className, {
@@ -38,6 +50,7 @@ const ScheduleBox: React.FC<ScheduleBoxProps> = ({subject, time, room, teacher, 
                     fontStyle: 'italic',
                     fontSize: 13
                 }]}>Class: {className}</Text>}
+                {message && <Text style={{color: colors.text, marginTop: 4}}>{message}</Text>}
             </View>
         </View>
     );
@@ -53,7 +66,6 @@ const styles = StyleSheet.create({
     headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
     },
     subject: {
         fontSize: 22,
@@ -94,4 +106,3 @@ const styles = StyleSheet.create({
 });
 
 export default ScheduleBox;
-

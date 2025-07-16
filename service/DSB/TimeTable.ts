@@ -1,98 +1,84 @@
 export interface ScheduleItem {
     id: string;
+    class: string;
+    periodStart: number;
+    periodEnd: number;
+    teacher: string;
     subject: string;
-    time: string;
     room: string;
-    teacher?: string;
-    class?: string;
-    period: number;
-    day: string;
-}
-
-export interface TimeTable {
-    date: string;
-    items: ScheduleItem[];
+    message: string;
 }
 
 export class TimeTable {
-    date: string;
-    items: ScheduleItem[];
+    date: string = "";  // Plan date in ISO format (YYYY-MM-DD)
+    planCreated: string = "";  // Plan creation time in ISO format (YYYY-MM-DDTHH:mm)
+    items: ScheduleItem[] = [];  // List of schedule items
 
-    constructor(date: string, items: ScheduleItem[]) {
-        this.date = date;
-        this.items = items;
-    }
-
-    static fromHtml(htmlData: string): TimeTable {
-        try {
-            const date = new Date().toISOString().split('T')[0];
-            const items: ScheduleItem[] = [];
-            let id = 1;
-            let currentClass = '';
-
-            // Match all rows in the mon_list table
-            const tableMatch = htmlData.match(/<table class="mon_list"[\s\S]*?<\/table>/);
-            if (!tableMatch) return new TimeTable(date, []);
-            const tableHtml = tableMatch[0];
-            const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
-            let rowMatch;
-            while ((rowMatch = rowRegex.exec(tableHtml)) !== null) {
-                const rowHtml = rowMatch[1];
-                // Check for class header row
-                const classHeaderMatch = rowHtml.match(/class=["']list inline_header["'][^>]*colspan=["']5["'][^>]*>(.*?)<\/td>/);
-                if (classHeaderMatch) {
-                    currentClass = classHeaderMatch[1].replace(/<[^>]*>/g, '').trim();
-                    continue;
-                }
-                // Parse lesson rows (skip header rows)
-                const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
-                let cellMatch;
-                const cells: string[] = [];
-                while ((cellMatch = cellRegex.exec(rowHtml)) !== null) {
-                    const cellContent = cellMatch[1]
-                        .replace(/<[^>]*>/g, '')
-                        .replace(/&nbsp;/g, ' ')
-                        .replace(/&amp;/g, '&')
-                        .replace(/&lt;/g, '<')
-                        .replace(/&gt;/g, '>')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    cells.push(cellContent);
-                }
-                // Only process rows with at least 5 cells and skip header
-                if (cells.length === 5 && cells[0] !== 'Stunde') {
-                    // Period can be a range (e.g., "8 - 9") or a single number
-                    let period = 0;
-                    const periodMatch = cells[0].match(/\d+/);
-                    if (periodMatch) period = parseInt(periodMatch[0]);
-                    items.push({
-                        id: id.toString(),
-                        period,
-                        time: cells[0],
-                        teacher: cells[1],
-                        subject: cells[2],
-                        room: cells[3],
-                        class: currentClass,
-                        day: date,
-                    });
-                    id++;
-                }
-            }
-            return new TimeTable(date, items);
-        } catch (error) {
-            console.error('Error parsing HTML timetable:', error);
-            throw new Error('Failed to parse timetable HTML');
+    constructor(htmlData: string) {
+        // Extract plan date from .mon_title (e.g., "15.7.2025 Dienstag")
+        const titleMatch = htmlData.match(/<div class="mon_title">(.*?)<\/div>/);
+        if (titleMatch) {
+            const datePart = titleMatch[1].split(' ')[0];
+            const [d, m, y] = datePart.split('.');
+            this.date = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+        } else {
+            this.date = new Date().toISOString().split('T')[0];
         }
-    }
 
-    // Get items for a specific day
-    getItemsForDay(day: string): ScheduleItem[] {
-        return this.items.filter(item => item.day === day);
-    }
+        // Extract plan creation time from "Stand: ..." (e.g., "Stand: 15.07.2025 11:37")
+        const standMatch = htmlData.match(/Stand: ([0-9]{2})\.([0-9]{2})\.([0-9]{4}) ([0-9]{2}:[0-9]{2})/);
+        if (standMatch) {
+            this.planCreated = `${standMatch[3]}-${standMatch[2]}-${standMatch[1]}T${standMatch[4]}`;
+        } else {
+            this.planCreated = new Date().toISOString();
+        }
 
-    // Get items for today
-    getTodaysItems(): ScheduleItem[] {
-        const today = new Date().toLocaleDateString('de-DE', {weekday: 'long'});
-        return this.getItemsForDay(today);
+        // Match all rows in the mon_list table
+        const tableMatch = htmlData.match(/<table class="mon_list"[\s\S]*?<\/table>/);
+        if (!tableMatch) return;
+        const tableHtml = tableMatch[0];
+        const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
+        rowRegex.exec(tableHtml);  // Skip the first match (header row)
+
+        let rowMatch;
+        let id = 1;
+        let currentClass = '';
+        while ((rowMatch = rowRegex.exec(tableHtml)) !== null) {
+            const rowHtml = rowMatch[1];
+
+            // Get all cells in the current row
+            const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
+            let cellMatch;
+            const cells: string[] = [];
+            while ((cellMatch = cellRegex.exec(rowHtml)) !== null) {
+                const cellContent = cellMatch[1]
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                cells.push(cellContent);
+            }
+
+            // Parse the cells
+            if (cells.length === 1) {
+                currentClass = cells[0].replace(/<[^>]*>/g, '').trim();
+            } else {
+                const periodRegex = /\d+/;
+                this.items.push({
+                    id: id.toString(),
+                    class: currentClass,
+                    periodStart: parseInt(periodRegex.exec(cells[0])?.[0] || '0'),
+                    periodEnd: parseInt(periodRegex.exec(cells[0])?.[0] || '0'),
+                    teacher: cells[1],
+                    subject: cells[2],
+                    room: cells[3],
+                    message: cells[4],
+                });
+                id++;
+            }
+        }
     }
 }
