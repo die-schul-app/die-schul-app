@@ -2,7 +2,7 @@ import ModernTextBox from '@/components/ModernTextBox'
 import { Colors } from '@/constants/Colors'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
-import { getCurrentDate } from '@/service/dateUtils'
+import getCurrentDate from '@/service/Date/getCurrentDate'
 import insertHomework from '@/service/insertHomework'
 import { FontAwesome6 } from '@expo/vector-icons'
 import React, { useRef, useState } from 'react'
@@ -90,7 +90,7 @@ const AddButton = () => {
                 </Modal>
 
                 <Pressable
-                    style={[styles.addButton, {backgroundColor: colors.tint}]}
+                    style={({ pressed }) => [styles.addButton, {backgroundColor: pressed ? colors.tint : colors.primary}]}
                     onPress={() => setModalVisible(true)}
                 >
                     <FontAwesome6 name="plus" size={24} color={colors.background}/>

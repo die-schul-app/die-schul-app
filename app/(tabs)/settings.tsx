@@ -71,8 +71,7 @@ export default function SettingsScreen() {
                     <Switch
                         value={theme === 'dark'}
                         onValueChange={toggleTheme}
-                        trackColor={{false: '#767577', true: '#81b0ff'}}
-                        thumbColor={theme === 'dark' ? '#f5dd4b' : '#f4f3f4'}
+                        trackColor={{false: '#767577', true: colors.primary }}
                     />
                 </View>
             </View>
