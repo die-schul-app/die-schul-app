@@ -90,7 +90,7 @@ export default function ScheduleScreen() {
             // Use mock data if not authenticated
             setSchedule(mockSchedule);
         }
-    }, [dsb, selectedClass]);
+    }, [selectedClass, dsb.isAuthenticated, dsb.timetable]);
 
     const handleRefresh = async () => {
         if (dsb.isAuthenticated) {
