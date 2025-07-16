@@ -4,12 +4,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '@/contexts/ThemeContext';
 import {Colors} from '@/constants/Colors';
 import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View} from 'react-native';
+import {FlatList, Pressable, StyleSheet, Text, View} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import ScheduleBox from '@/components/ScheduleBox';
 import {DSBClient} from '@/service/DSB/DSBClient';
-import {ScheduleItem} from "@/service/DSB/TimeTable";
+import {ScheduleItem, TimeTable} from "@/service/DSB/TimeTable";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {getDateString} from "@/service/dateUtils";
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 
 const ScheduleItemCard = ({item}: { item: ScheduleItem }) => (
     <ScheduleBox
@@ -48,11 +50,12 @@ export default function ScheduleScreen() {
     const [availableClasses, setAvailableClasses] = useState<string[]>([]);
     const {theme} = useTheme();
     const colors = theme === 'light' ? Colors.light : Colors.dark;
-    let storedClass: string | null;
+    const [storedClass, setStoredClass] = useState<string | null>(null);
+    let currentTimetable: TimeTable = new TimeTable('', [], new Date());
+    const navigation = useNavigation();
 
     useEffect(() => {
         (async () => {
-            storedClass = await AsyncStorage.getItem('selectedClass');
             const creds = await AsyncStorage.getItem('dsb_credentials');
             if (creds) {
                 const {username, password} = JSON.parse(creds);
@@ -60,6 +63,15 @@ export default function ScheduleScreen() {
             }
         })();
     }, []);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            (async () => {
+                const classValue = await AsyncStorage.getItem('selectedClass');
+                setStoredClass(classValue);
+            })();
+        }, [])
+    );
 
     // Load all plans on login
     const handleLogin = async (username: string, password: string): Promise<boolean> => {
@@ -92,8 +104,8 @@ export default function ScheduleScreen() {
         }
         setIsLoading(true);
         try {
-            let timetable = await dsbClient!.getTimetable(selectedDate.toISOString().split('T')[0]);
-            let schedule = timetable.items;
+            currentTimetable = await dsbClient!.getTimetable(selectedDate.toISOString().split('T')[0]);
+            let schedule = currentTimetable.items;
             const classes = Array.from(new Set(schedule.map((item: ScheduleItem) => item.class).filter(Boolean)));
             if (storedClass) classes.splice(0, 0, storedClass);
             classes.push('All Classes');
@@ -130,41 +142,59 @@ export default function ScheduleScreen() {
         <>
             <View style={[styles.container, {backgroundColor: colors.background}]}>
                 <View style={styles.header}>
-                    <View style={styles.headerLeft}>
-                        <Text style={styles.title}>Schedule</Text>
-                        <Text style={styles.date}>{selectedDate.toLocaleDateString()}</Text>
-                        {lastUpdated && (
-                            <Text style={styles.lastUpdated}>
-                                Last updated: {lastUpdated.toLocaleTimeString()}
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                        <View style={{flex: 1, flexDirection: 'column', justifyContent: 'flex-start'}}>
+                            <Text style={styles.selectedDateText}>
+                                {getDateString(selectedDate)}
                             </Text>
-                        )}
-                    </View>
-                    <View style={styles.headerRight}>
-                        <Pressable style={styles.refreshButton} onPress={handleRefresh} disabled={isLoading}>
-                            {isLoading ? (
-                                <ActivityIndicator size="small" color="#3B82F6"/>
-                            ) : (
-                                <FontAwesome name="refresh" size={20} color="#3B82F6"/>
+                            <Text style={styles.uploadedText}>
+                                {currentTimetable && currentTimetable.planCreated ?
+                                    (() => {
+                                        const planDate = selectedDate;
+                                        const created = currentTimetable.planCreated;
+                                        const planDay = new Date(planDate.getFullYear(), planDate.getMonth(), planDate.getDate());
+                                        const createdDay = new Date(created.getFullYear(), created.getMonth(), created.getDate());
+                                        const diffDays = Math.round((planDay.getTime() - createdDay.getTime()) / (1000 * 60 * 60 * 24));
+                                        const now = new Date();
+                                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                        const createdDiff = Math.round((createdDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                                        const time = created.toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        });
+                                        if (createdDiff === 0) return `Uploaded today, ${time}`;
+                                        if (createdDiff === -1) return `Uploaded yesterday, ${time}`;
+                                        if (diffDays === 0) return `Uploaded the same day, ${time}`;
+                                        if (diffDays === 1) return `Uploaded the day before, ${time}`;
+                                        if (diffDays > 1) return `Uploaded ${diffDays} days before, ${time}`;
+                                        return `Uploaded ${Math.abs(diffDays)} days after, ${time}`;
+                                    })()
+                                    : ''}
+                            </Text>
+                        </View>
+                        <View style={{justifyContent: 'flex-start', alignItems: 'flex-end', marginLeft: 8}}>
+                            <Pressable style={styles.pickerButton} onPress={() => setShowDatePicker(true)}>
+                                <FontAwesome name="calendar" size={20} color="#3B82F6"/>
+                            </Pressable>
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={selectedDate}
+                                    mode="date"
+                                    display="default"
+                                    onChange={(event, date) => {
+                                        setShowDatePicker(false);
+                                        if (date) setSelectedDate(date);
+                                    }}
+                                    style={{position: 'absolute', top: 30, right: 0, zIndex: 1000}}
+                                />
                             )}
-                        </Pressable>
-                        <Pressable style={styles.pickerButton} onPress={() => setShowDatePicker(true)}>
-                            <FontAwesome name="calendar" size={20} color="#3B82F6"/>
-                        </Pressable>
-                        {showDatePicker && (
-                            <DateTimePicker
-                                value={selectedDate}
-                                mode="date"
-                                display="default"
-                                onChange={(event, date) => {
-                                    setShowDatePicker(false);
-                                    if (date) setSelectedDate(date);
-                                }}
-                            />
-                        )}
-                        <View style={styles.classPickerWrapper}>
+                        </View>
+                    </View>
+                    <View
+                        style={{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginTop: 4}}>
+                        <View style={styles.classPickerWrapper2}>
                             <Picker
                                 selectedValue={selectedClass}
-                                style={{height: 40, width: 120}}
                                 onValueChange={(itemValue) => setSelectedClass(itemValue)}
                             >
                                 <Picker.Item label="Select Class" value=""/>
@@ -183,6 +213,8 @@ export default function ScheduleScreen() {
                         contentContainerStyle={{paddingBottom: 20}}
                         ListEmptyComponent={<Text style={{color: colors.text, textAlign: 'center', marginTop: 40}}>No
                             lessons for today.</Text>}
+                        refreshing={isLoading}
+                        onRefresh={handleRefresh}
                     />
                 ) : (
                     <LoginPrompt onLoginPress={handleLoginPress}/>
@@ -203,15 +235,24 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     header: {
+        marginBottom: 8, // reduce space between header and content
+    },
+    headerContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
+        alignItems: 'center',
     },
     headerLeft: {
         flex: 1,
     },
     headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerLeft2: {
+        flex: 1,
+    },
+    headerRight2: {
         flexDirection: 'row',
         alignItems: 'center',
     },
@@ -278,5 +319,21 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         overflow: 'hidden',
         backgroundColor: '#E5E7EB',
+    },
+    classPickerWrapper2: {
+        marginLeft: 10,
+        borderRadius: 8,
+        overflow: 'hidden',
+        backgroundColor: '#E5E7EB',
+        flex: 1,
+    },
+    selectedDateText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#3B82F6',
+    },
+    uploadedText: {
+        fontSize: 12,
+        color: '#9CA3AF',
     },
 });

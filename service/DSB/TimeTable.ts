@@ -11,10 +11,10 @@ export interface ScheduleItem {
 
 export class TimeTable {
     date: string = "";  // Plan date in ISO format (YYYY-MM-DD)
-    planCreated: string = "";  // Plan creation time in ISO format (YYYY-MM-DDTHH:mm)
+    planCreated: Date = new Date();  // Plan creation time in ISO format (YYYY-MM-DDTHH:mm)
     items: ScheduleItem[] = [];  // List of schedule items
 
-    constructor(date: string, items: ScheduleItem[], planCreated: string) {
+    constructor(date: string, items: ScheduleItem[], planCreated: Date) {
         this.date = date;  // Extract date part
         this.items = items;
         this.planCreated = planCreated;
@@ -26,8 +26,8 @@ export class TimeTable {
     }
 
     public static fromHtml(htmlData: string): TimeTable {
-        const today = new Date().toISOString();
-        let timetable = new TimeTable(today.split('T')[0], [], today);
+        const today = new Date();
+        let timetable = new TimeTable(today.toISOString().split('T')[0], [], today);
 
         // Extract plan date from .mon_title (e.g., "15.7.2025 Dienstag")
         const titleMatch = htmlData.match(/<div class="mon_title">(.*?)<\/div>/);
@@ -40,7 +40,7 @@ export class TimeTable {
         // Extract plan creation time from "Stand: ..." (e.g., "Stand: 15.07.2025 11:37")
         const standMatch = htmlData.match(/Stand: ([0-9]{2})\.([0-9]{2})\.([0-9]{4}) ([0-9]{2}:[0-9]{2})/);
         if (standMatch) {
-            timetable.planCreated = `${standMatch[3]}-${standMatch[2]}-${standMatch[1]}T${standMatch[4]}`;
+            timetable.planCreated = new Date(`${standMatch[3]}-${standMatch[2]}-${standMatch[1]}T${standMatch[4]}`);
         }
 
         // Match all rows in the mon_list table

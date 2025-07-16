@@ -84,7 +84,7 @@ export class DSBClient {
         if (storedData) {
             return TimeTable.fromJson(storedData);
         } else {
-            return new TimeTable(date, [], new Date().toISOString());
+            return new TimeTable(date, [], new Date());
         }
     }
 
