@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View, Switch, Pressable } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
 import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
@@ -23,8 +23,7 @@ export default function SettingsScreen() {
           <Switch
             value={theme === 'dark'}
             onValueChange={toggleTheme}
-            trackColor={{ false: '#767577', true: '#81b0ff' }}
-            thumbColor={theme === 'dark' ? '#f5dd4b' : '#f4f3f4'}
+            trackColor={{ false: '#767577', true: colors.primary }}
           />
         </View>
       </View>

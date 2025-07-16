@@ -1,8 +1,8 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
-import Threedots from '@/components/Buttons/Threedots'
+import Threedots from '@/components/Buttons/Threedots';
 import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 type BoxProps = {
     Subject: string;
@@ -18,7 +18,7 @@ const HomeworkBox = (prop: BoxProps) => {
         <View style={[styles.square, { backgroundColor: colors.background }]}>
             <View style={styles.nextCenter}>
                 <View style={styles.centerBox}>
-                    <Text style={[styles.homeworkFont, { backgroundColor: colors.tint, color: theme === 'light' ? colors.text : 'black' }]}>{prop.Subject} {prop.date}</Text>
+                    <Text style={[styles.homeworkFont, { backgroundColor: colors.primary, color: '#fff'}]}>{prop.Subject} {prop.date}</Text>
                 </View>
                 <View style={styles.threeDotsWrapper}>
                     <Threedots />

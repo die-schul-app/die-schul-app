@@ -1,7 +1,7 @@
-import { FontAwesome6 } from '@expo/vector-icons';
-import { Pressable, View, StyleSheet} from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 const Threedots = () => {
 
@@ -10,7 +10,7 @@ const Threedots = () => {
     return(
         <View>
             <Pressable style={styles.button}>
-                <FontAwesome6 name="ellipsis" color = {colors.text} size = {23}/>
+                <FontAwesome6 name="ellipsis" color = '#fff' size = {23}/>
             </Pressable>
         </View>
     )
