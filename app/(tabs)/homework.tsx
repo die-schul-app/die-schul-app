@@ -1,3 +1,4 @@
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import AddButton from '@/components/Buttons/AddButton';
 import HomeworkBox from '@/components/HomeworkBox';
 import { supabase } from '@/config/supabaseClient';
@@ -12,15 +13,15 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 type HomeworkType = {
     id: number;
-    Subjekt: string;
+    subject: string;
     to_do: string;
-    due: string;
+    due_date: string;
 };
 
 export default function Homework() {
-  const { theme } = useTheme();
-  const colors = theme === 'light' ? Colors.light : Colors.dark;
-  const { user } = useAuth();
+    const { theme } = useTheme();
+    const colors = theme === 'light' ? Colors.light : Colors.dark;
+    const { user } = useAuth();
     const [homework, setHomework] = useState<HomeworkType[] | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +46,7 @@ export default function Homework() {
                 {
                     event: '*',
                     schema: 'public',
-                    table: 'Homework',
+                    table: 'homework',
                 },
                 (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
                     console.log('Database change received!', payload);
@@ -72,17 +73,17 @@ export default function Homework() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <HomeworkBox
-            Subject={item.Subjekt}
+            Subject={item.subject}
             Text={item.to_do}
-            date={formatDate(item.due)}
+            date={formatDate(item.due_date)}
           />
         )}
         contentContainerStyle={styles.listContent}
       />
 
-      <AddButton />
-    </View>
-  );
+            <AddButton />
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({

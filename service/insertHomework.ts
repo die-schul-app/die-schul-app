@@ -1,5 +1,4 @@
 import { supabase } from '@/config/supabaseClient'
-import { User } from '@supabase/supabase-js'
 
 export default async function insertHomework( user: string, text: string, date: string, assignment: string ): Promise<void> {
     if (!user) {
@@ -8,8 +7,8 @@ export default async function insertHomework( user: string, text: string, date: 
     }
 
     const {data, error} = await supabase
-        .from('Homework')
-        .insert([{Subjekt: text, due: date, to_do: assignment, user_id: user}])
+        .from('homework')
+        .insert([{subject: text, due_date: date, to_do: assignment, user_id: user}])
 
     if (error) {
         console.error('Insert error:', error)
