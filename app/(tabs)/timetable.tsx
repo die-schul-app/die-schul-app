@@ -4,10 +4,19 @@ import React, { useEffect, useState } from "react";
 const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
 
 function getValidTodayIndex() {
-  // Wandelt JS-Wochentag (So=0, Mo=1, ...) auf dein Array (Mo=0, Di=1, ...)
   const jsDay = new Date().getDay();
   const idx = (jsDay + 6) % 7;
-  return idx > 4 ? 0 : idx; // Nur Montag bis Freitag, sonst Montag
+  return idx > 4 ? 0 : idx;
+}
+
+// Gibt nur das Datum für einen Wochentag relativ zu heute zurück
+function getDateForWeekday(index: number): string {
+  const today = new Date();
+  const todayIdx = getValidTodayIndex();
+  const diff = index - todayIdx;
+  const date = new Date(today);
+  date.setDate(today.getDate() + diff);
+  return date.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 export default function Timetable() {
@@ -25,7 +34,6 @@ export default function Timetable() {
     "12:30 - 13:15",
   ]);
 
-  // Hole den globalen Darkmode-Status
   const { theme } = useTheme();
   const darkTheme = theme === "dark";
 
@@ -94,12 +102,15 @@ export default function Timetable() {
           Wochenansicht
         </button>
         <button
-          onClick={() => {setCurrentDayIndex(todayIndex); setSelectedDay(weekdays[todayIndex]); setViewMode("day");}}
+          onClick={() => {
+            setCurrentDayIndex(todayIndex);
+            setSelectedDay(weekdays[todayIndex]);
+            setViewMode("day");
+          }}
           style={currentStyles.todayButton}
         >
           📅 Heute
         </button>
-        {/* Theme-Button entfernt, da global */}
       </div>
 
       <div
@@ -109,7 +120,28 @@ export default function Timetable() {
       >
         {viewMode === "day" ? (
           <div>
-            <h2 style={currentStyles.dayHeader}>{activeDay}</h2>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 8 }}>
+              <button
+                onClick={() => currentDayIndex > 0 && setCurrentDayIndex(currentDayIndex - 1)}
+                style={currentStyles.buttonSmall}
+                disabled={currentDayIndex === 0}
+              >
+                ◀
+              </button>
+              <div>
+                <h2 style={currentStyles.dayHeader}>{activeDay}</h2>
+                <div style={{ textAlign: "center", color: "#888", fontSize: 16 }}>
+                  {getDateForWeekday(currentDayIndex)}
+                </div>
+              </div>
+              <button
+                onClick={() => currentDayIndex < weekdays.length - 1 && setCurrentDayIndex(currentDayIndex + 1)}
+                style={currentStyles.buttonSmall}
+                disabled={currentDayIndex === weekdays.length - 1}
+              >
+                ▶
+              </button>
+            </div>
             {customTimes.map((time) => (
               <div key={time} style={currentStyles.card}>
                 <div style={currentStyles.time}>{time}</div>
@@ -127,9 +159,12 @@ export default function Timetable() {
               marginBottom: 16,
             }}
           >
-            {weekdays.map((day) => (
+            {weekdays.map((day, idx) => (
               <div key={day} style={{ minWidth: 170 }}>
                 <h3 style={{ textAlign: "center", marginBottom: 8 }}>{day}</h3>
+                <div style={{ textAlign: "center", color: "#888", fontSize: 15, marginBottom: 8 }}>
+                  {getDateForWeekday(idx)}
+                </div>
                 {customTimes.map((time) => (
                   <div key={time} style={currentStyles.card}>
                     <div style={currentStyles.time}>{time}</div>
@@ -229,13 +264,13 @@ const styles = {
     fontWeight: "bold",
   },
   todayButton: {
-  padding: 10,
-  borderRadius: 20,
-  backgroundColor: "#ffc107",
-  border: "none",
-  fontWeight: "bold",
-  cursor: "pointer", // <--- hinzufügen!
-},
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: "#ffc107",
+    border: "none",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
   themeToggle: {
     padding: 10,
     borderRadius: 20,
@@ -340,7 +375,7 @@ const darkStyles = {
   todayButton: {
     ...styles.todayButton,
     backgroundColor: "#ffca2c",
-    cursor: "pointer", // <--- hinzufügen!
+    cursor: "pointer",
   },
   input: {
     ...styles.input,
