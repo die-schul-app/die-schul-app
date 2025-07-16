@@ -71,7 +71,7 @@ export default function SettingsScreen() {
                     <Switch
                         value={theme === 'dark'}
                         onValueChange={toggleTheme}
-                        trackColor={{false: '#767577', true: colors.primary }}
+                        trackColor={{false: '#767577', true: colors.primary}}
                     />
                 </View>
             </View>
@@ -85,7 +85,7 @@ export default function SettingsScreen() {
                         borderRadius: 8,
                         padding: 8,
                         color: colors.text,
-                        backgroundColor: colors.secondary,
+                        backgroundColor: colors.primary,
                         marginBottom: 10,
                     }}
                     placeholder="Enter your class (e.g. 10A, 5B)"
