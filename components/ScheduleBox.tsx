@@ -9,9 +9,7 @@ interface ScheduleBoxProps {
     teacher: string;
     subject: string;
     room: string;
-    message?: string;
-    className?: string;
-    time?: string;
+    message: string;
 }
 
 const ScheduleBox: React.FC<ScheduleBoxProps> = ({
@@ -20,9 +18,7 @@ const ScheduleBox: React.FC<ScheduleBoxProps> = ({
                                                      teacher,
                                                      periodStart,
                                                      periodEnd,
-                                                     message,
-                                                     className,
-                                                     time
+                                                     message
                                                  }) => {
     const {theme} = useTheme();
     const colors = theme === 'light' ? Colors.light : Colors.dark;
@@ -42,14 +38,8 @@ const ScheduleBox: React.FC<ScheduleBoxProps> = ({
                 borderColor: colors.tint,
                 borderWidth: 1
             }]}>
-                {time && <Text style={[styles.time, {color: colors.text}]}>{time}</Text>}
                 <Text style={[styles.room, {color: colors.text}]}>{room}</Text>
                 {teacher && <Text style={[styles.teacher, {color: colors.text}]}>{teacher}</Text>}
-                {className && <Text style={[styles.className, {
-                    color: colors.text,
-                    fontStyle: 'italic',
-                    fontSize: 13
-                }]}>Class: {className}</Text>}
                 {message && <Text style={{color: colors.text, marginTop: 4}}>{message}</Text>}
             </View>
         </View>

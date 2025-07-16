@@ -82,10 +82,9 @@ export class DSBClient {
     public async getTimetable(date: string): Promise<TimeTable> {
         const storedData = await AsyncStorage.getItem(`dsb_plan_${date}`);
         if (storedData) {
-            const timetableData = JSON.parse(storedData);
-            return new TimeTable(timetableData);
+            return TimeTable.fromJson(storedData);
         } else {
-            throw new Error(`No timetable found for date: ${date}`);
+            return new TimeTable(date, [], new Date().toISOString());
         }
     }
 
@@ -151,7 +150,7 @@ export class DSBClient {
             const timetableUrl = plan.Childs[0].Detail;
             try {
                 const htmlResponse = await this.requester.get(timetableUrl);
-                const timetable = new TimeTable(htmlResponse.data);
+                const timetable = TimeTable.fromHtml(htmlResponse.data);
                 await AsyncStorage.setItem(
                     `dsb_plan_${timetable.date}`,
                     JSON.stringify(timetable)

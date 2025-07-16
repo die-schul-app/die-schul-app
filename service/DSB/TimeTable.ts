@@ -14,28 +14,38 @@ export class TimeTable {
     planCreated: string = "";  // Plan creation time in ISO format (YYYY-MM-DDTHH:mm)
     items: ScheduleItem[] = [];  // List of schedule items
 
-    constructor(htmlData: string) {
+    constructor(date: string, items: ScheduleItem[], planCreated: string) {
+        this.date = date;  // Extract date part
+        this.items = items;
+        this.planCreated = planCreated;
+    }
+
+    public static fromJson(jsonData: string): TimeTable {
+        const timetableData = JSON.parse(jsonData);
+        return new TimeTable(timetableData.date, timetableData.items, timetableData.planCreated);
+    }
+
+    public static fromHtml(htmlData: string): TimeTable {
+        const today = new Date().toISOString();
+        let timetable = new TimeTable(today.split('T')[0], [], today);
+
         // Extract plan date from .mon_title (e.g., "15.7.2025 Dienstag")
         const titleMatch = htmlData.match(/<div class="mon_title">(.*?)<\/div>/);
         if (titleMatch) {
             const datePart = titleMatch[1].split(' ')[0];
             const [d, m, y] = datePart.split('.');
-            this.date = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-        } else {
-            this.date = new Date().toISOString().split('T')[0];
+            timetable.date = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
         }
 
         // Extract plan creation time from "Stand: ..." (e.g., "Stand: 15.07.2025 11:37")
         const standMatch = htmlData.match(/Stand: ([0-9]{2})\.([0-9]{2})\.([0-9]{4}) ([0-9]{2}:[0-9]{2})/);
         if (standMatch) {
-            this.planCreated = `${standMatch[3]}-${standMatch[2]}-${standMatch[1]}T${standMatch[4]}`;
-        } else {
-            this.planCreated = new Date().toISOString();
+            timetable.planCreated = `${standMatch[3]}-${standMatch[2]}-${standMatch[1]}T${standMatch[4]}`;
         }
 
         // Match all rows in the mon_list table
         const tableMatch = htmlData.match(/<table class="mon_list"[\s\S]*?<\/table>/);
-        if (!tableMatch) return;
+        if (!tableMatch) return timetable;
         const tableHtml = tableMatch[0];
         const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
         rowRegex.exec(tableHtml);  // Skip the first match (header row)
@@ -67,7 +77,7 @@ export class TimeTable {
                 currentClass = cells[0].replace(/<[^>]*>/g, '').trim();
             } else {
                 const periodRegex = /\d+/;
-                this.items.push({
+                timetable.items.push({
                     id: id.toString(),
                     class: currentClass,
                     periodStart: parseInt(periodRegex.exec(cells[0])?.[0] || '0'),
@@ -80,5 +90,7 @@ export class TimeTable {
                 id++;
             }
         }
+
+        return timetable;
     }
 }
