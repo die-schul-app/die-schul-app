@@ -1,6 +1,14 @@
+import { useTheme } from "@/contexts/ThemeContext"; // Passe den Pfad ggf. an
 import React, { useEffect, useState } from "react";
 
 const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
+
+function getValidTodayIndex() {
+  // Wandelt JS-Wochentag (So=0, Mo=1, ...) auf dein Array (Mo=0, Di=1, ...)
+  const jsDay = new Date().getDay();
+  const idx = (jsDay + 6) % 7;
+  return idx > 4 ? 0 : idx; // Nur Montag bis Freitag, sonst Montag
+}
 
 export default function Timetable() {
   const [timetable, setTimetable] = useState<Record<string, Record<string, string>>>(() => {
@@ -17,13 +25,16 @@ export default function Timetable() {
     "12:30 - 13:15",
   ]);
 
-  const [darkTheme, setDarkTheme] = useState(false);
-  const todayIndex = Math.max(0, new Date().getDay() - 1);
+  // Hole den globalen Darkmode-Status
+  const { theme } = useTheme();
+  const darkTheme = theme === "dark";
+
+  const todayIndex = getValidTodayIndex();
   const [currentDayIndex, setCurrentDayIndex] = useState(todayIndex);
   const [viewMode, setViewMode] = useState("day");
   const [selectedDay, setSelectedDay] = useState(weekdays[todayIndex]);
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("08:45");
+  const [startTime, setStartTime] = useState("08:05");
+  const [endTime, setEndTime] = useState("08:50");
   const [className, setClassName] = useState("");
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
@@ -69,7 +80,6 @@ export default function Timetable() {
 
   return (
     <div style={currentStyles.container}>
-      {/* Kein Header mehr */}
       <div style={currentStyles.toggleRow}>
         <button
           style={viewMode === "day" ? currentStyles.toggleActive : currentStyles.toggle}
@@ -84,20 +94,19 @@ export default function Timetable() {
           Wochenansicht
         </button>
         <button
-          onClick={() => setCurrentDayIndex(todayIndex)}
+          onClick={() => {setCurrentDayIndex(todayIndex); setSelectedDay(weekdays[todayIndex]); setViewMode("day");}}
           style={currentStyles.todayButton}
         >
           📅 Heute
         </button>
-        <button
-          onClick={() => setDarkTheme(!darkTheme)}
-          style={currentStyles.themeToggle}
-        >
-          {darkTheme ? "☀️ Hell" : "🌙 Dunkel"}
-        </button>
+        {/* Theme-Button entfernt, da global */}
       </div>
 
-      <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{ width: "100%" }}
+      >
         {viewMode === "day" ? (
           <div>
             <h2 style={currentStyles.dayHeader}>{activeDay}</h2>
@@ -109,9 +118,17 @@ export default function Timetable() {
             ))}
           </div>
         ) : (
-          <div style={{ display: "flex", gap: 16, overflowX: "auto" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              overflowX: "auto",
+              paddingBottom: 8,
+              marginBottom: 16,
+            }}
+          >
             {weekdays.map((day) => (
-              <div key={day} style={{ minWidth: 150 }}>
+              <div key={day} style={{ minWidth: 170 }}>
                 <h3 style={{ textAlign: "center", marginBottom: 8 }}>{day}</h3>
                 {customTimes.map((time) => (
                   <div key={time} style={currentStyles.card}>
@@ -128,16 +145,32 @@ export default function Timetable() {
       <div style={currentStyles.section}>
         <h2>Fach hinzufügen</h2>
         <div style={currentStyles.inputRow}>
-          <select value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)} style={currentStyles.input}>
-            {weekdays.map((d) => <option key={d} value={d}>{d}</option>)}
+          <select
+            value={selectedDay}
+            onChange={(e) => setSelectedDay(e.target.value)}
+            style={currentStyles.input}
+          >
+            {weekdays.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
           </select>
 
-          <select value={`${startTime} - ${endTime}`} onChange={(e) => {
-            const [start, end] = e.target.value.split(" - ");
-            setStartTime(start);
-            setEndTime(end);
-          }} style={currentStyles.input}>
-            {customTimes.map((t) => <option key={t} value={t}>{t}</option>)}
+          <select
+            value={`${startTime} - ${endTime}`}
+            onChange={(e) => {
+              const [start, end] = e.target.value.split(" - ");
+              setStartTime(start);
+              setEndTime(end);
+            }}
+            style={currentStyles.input}
+          >
+            {customTimes.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -147,7 +180,9 @@ export default function Timetable() {
           onChange={(e) => setClassName(e.target.value)}
           style={currentStyles.inputFull}
         />
-        <button onClick={addClass} style={currentStyles.button}>Fach speichern</button>
+        <button onClick={addClass} style={currentStyles.button}>
+          Fach speichern
+        </button>
       </div>
     </div>
   );
@@ -156,12 +191,14 @@ export default function Timetable() {
 const styles = {
   container: {
     fontFamily: "Arial, sans-serif",
-    padding: 16,
-    maxWidth: 500,
-    margin: "0 auto",
+    padding: 24,
+    maxWidth: 900,
+    margin: "40px auto",
     background: "#f2f2f2",
-    borderRadius: 20,
+    borderRadius: 24,
     color: "#000",
+    boxSizing: "border-box" as const,
+    boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
   },
   header: {
     textAlign: "center" as const,
@@ -192,12 +229,13 @@ const styles = {
     fontWeight: "bold",
   },
   todayButton: {
-    padding: 10,
-    borderRadius: 20,
-    backgroundColor: "#ffc107",
-    border: "none",
-    fontWeight: "bold",
-  },
+  padding: 10,
+  borderRadius: 20,
+  backgroundColor: "#ffc107",
+  border: "none",
+  fontWeight: "bold",
+  cursor: "pointer", // <--- hinzufügen!
+},
   themeToggle: {
     padding: 10,
     borderRadius: 20,
@@ -284,6 +322,7 @@ const darkStyles = {
     ...styles.container,
     background: "#222",
     color: "#eee",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.32)",
   },
   card: {
     ...styles.card,
@@ -301,6 +340,7 @@ const darkStyles = {
   todayButton: {
     ...styles.todayButton,
     backgroundColor: "#ffca2c",
+    cursor: "pointer", // <--- hinzufügen!
   },
   input: {
     ...styles.input,
