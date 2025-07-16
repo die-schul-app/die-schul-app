@@ -8,11 +8,6 @@ export default function Timetable() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  const [homework, setHomework] = useState<Record<string, Record<string, string[]>>>(() => {
-    const saved = localStorage.getItem("homework");
-    return saved ? JSON.parse(saved) : {};
-  });
-
   const [customTimes] = useState([
     "08:05 - 08:50",
     "08:50 - 09:35",
@@ -30,16 +25,11 @@ export default function Timetable() {
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("08:45");
   const [className, setClassName] = useState("");
-  const [homeworkText, setHomeworkText] = useState("");
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   useEffect(() => {
     localStorage.setItem("timetable", JSON.stringify(timetable));
   }, [timetable]);
-
-  useEffect(() => {
-    localStorage.setItem("homework", JSON.stringify(homework));
-  }, [homework]);
 
   const addClass = () => {
     if (!className.trim()) return;
@@ -54,37 +44,6 @@ export default function Timetable() {
       }));
     }
     setClassName("");
-  };
-
-  const addHomework = (): void => {
-    if (!homeworkText.trim()) return;
-    const timeSlot = `${startTime} - ${endTStundenplanAppime}`;
-    setHomework((prev) => {
-      const existingDay = prev[selectedDay] || {};
-      const existingTime = existingDay[timeSlot] || [];
-      return {
-        ...prev,
-        [selectedDay]: {
-          ...existingDay,02.0-175
-          [timeSlot]: [...existingTime, homeworkText],
-        },
-      };
-    });
-    setHomeworkText("");
-  };
-
-  const deleteHomework = (day: string, time: string, index: number): void => {
-    setHomework((prev) => {
-      const updated = [...(prev[day]?.[time] || [])];
-      updated.splice(index, 1);
-      return {
-        ...prev,
-        [day]: {
-          ...prev[day],
-          [time]: updated,
-        },
-      };
-    });
   };
 
   const handleSwipe = (dir: "left" | "right"): void => {
@@ -110,8 +69,7 @@ export default function Timetable() {
 
   return (
     <div style={currentStyles.container}>
-      <h1 style={currentStyles.header}>📘 Die Schul App.</h1>
-
+      {/* Kein Header mehr */}
       <div style={currentStyles.toggleRow}>
         <button
           style={viewMode === "day" ? currentStyles.toggleActive : currentStyles.toggle}
@@ -147,42 +105,18 @@ export default function Timetable() {
               <div key={time} style={currentStyles.card}>
                 <div style={currentStyles.time}>{time}</div>
                 <div style={currentStyles.subject}>{timetable[activeDay]?.[time] || "Frei"}</div>
-                <div style={currentStyles.homework}>
-                  📝 {Array.isArray(homework[activeDay]?.[time]) && homework[activeDay][time].length > 0 ? (
-                    homework[activeDay][time].map((hw, i) => (
-                      <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span>• {hw}</span>
-                        <button onClick={() => deleteHomework(activeDay, time, i)} style={{ background: "none", border: "none", color: "red" }}>❌</button>
-                      </div>
-                    ))
-                  ) : (
-                    "Keine Hausaufgabe"
-                  )}
-                </div>
               </div>
             ))}
           </div>
         ) : (
-          <div>
+          <div style={{ display: "flex", gap: 16, overflowX: "auto" }}>
             {weekdays.map((day) => (
-              <div key={day}>
-                <h3>{day}</h3>
+              <div key={day} style={{ minWidth: 150 }}>
+                <h3 style={{ textAlign: "center", marginBottom: 8 }}>{day}</h3>
                 {customTimes.map((time) => (
                   <div key={time} style={currentStyles.card}>
                     <div style={currentStyles.time}>{time}</div>
                     <div style={currentStyles.subject}>{timetable[day]?.[time] || "Frei"}</div>
-                    <div style={currentStyles.homework}>
-                      📝 {Array.isArray(homework[day]?.[time]) && homework[day][time].length > 0 ? (
-                        homework[day][time].map((hw, i) => (
-                          <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
-                            <span>• {hw}</span>
-                            <button onClick={() => deleteHomework(day, time, i)} style={{ background: "none", border: "none", color: "red" }}>❌</button>
-                          </div>
-                        ))
-                      ) : (
-                        "Keine Hausaufgabe"
-                      )}
-                    </div>
                   </div>
                 ))}
               </div>
@@ -215,22 +149,9 @@ export default function Timetable() {
         />
         <button onClick={addClass} style={currentStyles.button}>Fach speichern</button>
       </div>
-
-      <div style={currentStyles.section}>
-        <h2>Hausaufgabe</h2>
-        <textarea
-          placeholder="Hausaufgabe eingeben"
-          value={homeworkText}
-          onChange={(e) => setHomeworkText(e.target.value)}
-          rows={3}
-          style={currentStyles.textarea}
-        />
-        <button onClick={addHomework} style={currentStyles.button}>Hausaufgabe speichern</button>
-      </div>
     </div>
   );
 }
-
 
 const styles = {
   container: {
@@ -243,7 +164,7 @@ const styles = {
     color: "#000",
   },
   header: {
-    textAlign: "center",
+    textAlign: "center" as const,
     marginBottom: 10,
   },
   toggleRow: {
@@ -251,7 +172,7 @@ const styles = {
     justifyContent: "space-between",
     gap: 8,
     marginBottom: 16,
-    flexWrap: "wrap",
+    flexWrap: "wrap" as const,
   },
   toggle: {
     flex: 1,
@@ -308,15 +229,10 @@ const styles = {
     fontWeight: "bold",
     marginTop: 5,
   },
-  homework: {
-    fontSize: 14,
-    marginTop: 5,
-    color: "#333",
-  },
   inputRow: {
     display: "flex",
     gap: 8,
-    flexWrap: "wrap",
+    flexWrap: "wrap" as const,
     marginBottom: 10,
   },
   input: {
@@ -409,9 +325,5 @@ const darkStyles = {
     ...styles.textarea,
     backgroundColor: "#444",
     color: "#eee",
-  },
-  homework: {
-    ...styles.homework,
-    color: "#fff",
   },
 };
