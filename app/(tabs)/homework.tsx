@@ -1,33 +1,33 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import {FlatList, StyleSheet, Text, View} from 'react-native';
 import AddButton from '@/components/Buttons/AddButton';
 import HomeworkBox from '@/components/HomeworkBox';
-import { getHomework } from '@/service/getHomework';
-import formatDate from '@/service/Date/formatDate';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Colors } from '@/constants/Colors';
-import { useAuth } from '@/contexts/AuthContext';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/config/supabaseClient';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import {supabase} from '@/config/supabaseClient';
+import {Colors} from '@/constants/Colors';
+import {useAuth} from '@/contexts/AuthContext';
+import {useTheme} from '@/contexts/ThemeContext';
+import {formatDate} from '@/service/dateUtils';
+import {getHomework} from '@/service/getHomework';
+import {RealtimePostgresChangesPayload} from '@supabase/supabase-js';
+import {useEffect, useState} from 'react';
 
 type HomeworkType = {
     id: number;
     subject: string;
     to_do: string;
-    due_date: string; 
+    due_date: string;
 };
 
 export default function Homework() {
-    const { theme } = useTheme();
+    const {theme} = useTheme();
     const colors = theme === 'light' ? Colors.light : Colors.dark;
-    const { user } = useAuth();
+    const {user} = useAuth();
     const [homework, setHomework] = useState<HomeworkType[] | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const fetchAndSetHomework = async () => {
         if (!user) return;
 
-        const { Homework, error } = await getHomework(user);
+        const {Homework, error} = await getHomework(user);
         if (error) {
             setError(error);
         } else {
@@ -60,27 +60,27 @@ export default function Homework() {
     }, [user]);
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-            {error && <Text style={{ color: 'red', padding: 20 }}>Error: {error}</Text>}
+        <View style={[styles.container, {backgroundColor: colors.background}]}>
+            {error && <Text style={{color: 'red', padding: 20}}>Error: {error}</Text>}
 
             {homework && homework.length === 0 && (
-                <Text style={[styles.emptyText, { color: colors.text }]}>No homework found. Add some!</Text>
+                <Text style={[styles.emptyText, {color: colors.text}]}>No homework found. Add some!</Text>
             )}
 
             <FlatList
                 data={homework}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
+                renderItem={({item}) => (
                     <HomeworkBox
                         Subject={item.subject}
                         Text={item.to_do}
                         date={formatDate(item.due_date)}
-/>
+                    />
                 )}
                 contentContainerStyle={styles.listContent}
             />
 
-            <AddButton />
+            <AddButton/>
         </View>
     );
 }

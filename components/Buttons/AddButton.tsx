@@ -1,13 +1,13 @@
 import ModernTextBox from '@/components/ModernTextBox'
-import { Colors } from '@/constants/Colors'
-import { useAuth } from '@/contexts/AuthContext'
-import { useTheme } from '@/contexts/ThemeContext'
-import getCurrentDate from '@/service/Date/getCurrentDate'
+import {Colors} from '@/constants/Colors'
+import {useAuth} from '@/contexts/AuthContext'
+import {useTheme} from '@/contexts/ThemeContext'
 import insertHomework from '@/service/insertHomework'
-import { FontAwesome6 } from '@expo/vector-icons'
-import React, { useRef, useState } from 'react'
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
+import {FontAwesome6} from '@expo/vector-icons'
+import React, {useRef, useState} from 'react'
+import {Modal, Pressable, StyleSheet, Text, View} from 'react-native'
+import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context'
+import {getCurrentDate} from '@/service/dateUtils'
 
 const AddButton = () => {
     const {theme} = useTheme()
@@ -22,7 +22,7 @@ const AddButton = () => {
     const handlePress = () => {
         if (inputText && inputAssign !== '') {
             if (user) {
-                insertHomework(user.id , inputText, inputDate, inputAssign).then()
+                insertHomework(user.id, inputText, inputDate, inputAssign).then()
                 setModalVisible(false)
                 setInputText('')
             } else {
@@ -48,7 +48,7 @@ const AddButton = () => {
                     >
                         <Pressable
                             style={[styles.modalView, {backgroundColor: colors.background}]}
-                            onPress={( e ) => e.stopPropagation()}
+                            onPress={(e) => e.stopPropagation()}
                         >
                             <View style={styles.inputGroup}>
                                 <Text style={[styles.infoText, {color: colors.text}]}>Subject</Text>
@@ -90,7 +90,7 @@ const AddButton = () => {
                 </Modal>
 
                 <Pressable
-                    style={({ pressed }) => [styles.addButton, {backgroundColor: pressed ? colors.tint : colors.primary}]}
+                    style={({pressed}) => [styles.addButton, {backgroundColor: pressed ? colors.tint : colors.primary}]}
                     onPress={() => setModalVisible(true)}
                 >
                     <FontAwesome6 name="plus" size={24} color={colors.background}/>
