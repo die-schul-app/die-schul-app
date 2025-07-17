@@ -69,6 +69,7 @@ export default function Homework() {
 
             <FlatList
                 data={homework}
+                showsVerticalScrollIndicator={false}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <HomeworkBox

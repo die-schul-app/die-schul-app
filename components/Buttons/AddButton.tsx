@@ -16,7 +16,7 @@ const AddButton = () => {
     const [modalVisible, setModalVisible] = useState(false)
     const [inputText, setInputText] = useState('')
     const [inputAssign, setInputAssign] = useState('')
-    const [inputDate] = useState(getCurrentDate())
+    const [inputDate, setInputDate] = useState(getCurrentDate())
     const inputRef = useRef(null)
 
     const handlePress = () => {
@@ -31,6 +31,13 @@ const AddButton = () => {
         } else {
             console.log("Pls fill out all fields")
         }
+    }
+
+    const openModal = () => {
+        setInputText('')
+        setInputAssign('')
+        setInputDate(getCurrentDate())
+        setModalVisible(true)
     }
 
     return (
@@ -75,7 +82,7 @@ const AddButton = () => {
                                 <ModernTextBox
                                     HolderPlace=""
                                     value={inputDate}
-                                    editable={false}
+                                    onChangeText={setInputDate}
                                 />
                             </View>
 
@@ -91,7 +98,7 @@ const AddButton = () => {
 
                 <Pressable
                     style={({ pressed }) => [styles.addButton, {backgroundColor: pressed ? colors.tint : colors.primary}]}
-                    onPress={() => setModalVisible(true)}
+                    onPress={openModal}
                 >
                     <FontAwesome6 name="plus" size={24} color={colors.background}/>
                 </Pressable>

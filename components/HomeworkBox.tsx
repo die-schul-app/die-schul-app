@@ -1,8 +1,9 @@
 import Threedots from '@/components/Buttons/Threedots';
 import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
-import React from 'react';
+import React, {useState} from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { DotsModal } from './DotsModal';
 
 type BoxProps = {
     Subject: string;
@@ -14,6 +15,10 @@ const HomeworkBox = (prop: BoxProps) => {
     const { theme } = useTheme();
     const colors = theme === 'light' ? Colors.light : Colors.dark;
 
+    const [isModalVisible, setModalVisible] = useState(false);
+    const openModal = () => setModalVisible(true);
+    const closeModal = () => setModalVisible(false);
+
     return (
         <View style={[styles.square, { backgroundColor: colors.background }]}>
             <View style={styles.nextCenter}>
@@ -21,7 +26,8 @@ const HomeworkBox = (prop: BoxProps) => {
                     <Text style={[styles.homeworkFont, { backgroundColor: colors.primary, color: '#fff'}]}>{prop.Subject} {prop.date}</Text>
                 </View>
                 <View style={styles.threeDotsWrapper}>
-                    <Threedots />
+                    <Threedots handlePress={openModal}/>
+                    <DotsModal visible={isModalVisible} onClose ={closeModal}/>
                 </View>
             </View>
             <View style={[styles.innerSquare, { backgroundColor: colors.background, borderColor: colors.tint, borderWidth: 1 }]}>
