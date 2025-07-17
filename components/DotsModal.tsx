@@ -1,7 +1,8 @@
-import React from 'react';
-import { Modal, Pressable, StyleSheet, View, Text } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
 import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
+import { deleteHomework } from '@/service/deleteHomework';
+import React from 'react';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type DotsModalProps = {
     visible: boolean;
@@ -13,6 +14,10 @@ export const DotsModal = ({ visible, onClose }: DotsModalProps) => {
     const { theme } = useTheme();
     const colors = theme === 'light' ? Colors.light : Colors.dark;
 
+
+    const editHomework = () =>{
+
+    }
     if (!visible) {
         return null;
     }
@@ -25,13 +30,13 @@ export const DotsModal = ({ visible, onClose }: DotsModalProps) => {
                 <Pressable style={styles.overlay} onPress={onClose}>
                     <Pressable style={[styles.modalContent, {backgroundColor: colors.background}]}>                     
                         <View>
-                            <Pressable  style={{ backgroundColor: colors.background }} >
-                                <Text style={styles.modalText}>Delete Homework</Text>
+                            <Pressable  style={{ borderColor: colors.border }} >
+                                <Text style={[styles.modalText, {color: colors.text}]} onPress={deleteHomework}>Delete Homework</Text>
                             </Pressable>
                         </View>
                         <View>
-                            <Pressable>
-                                <Text style={styles.modalText}>Edit Homework </Text>
+                            <Pressable style={{borderColor: colors.border}}>
+                                <Text style={[styles.modalText, {color: colors.text}]} onPress={editHomework}>Edit Homework </Text>
                             </Pressable>
                         </View>                   
                 </Pressable>
@@ -59,9 +64,6 @@ const styles = StyleSheet.create({
     modalText: {
         fontSize: 18,
         marginBottom: 15,
-        color: 'black',
+        fontWeight: 400,
     },
-    buttons: {
-        backgroundColor: 'blue'
-    }
 });
