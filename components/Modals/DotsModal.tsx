@@ -1,11 +1,12 @@
 import { Colors } from '@/constants/Colors';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import React, {useState} from 'react';
-import { Modal, Pressable, StyleSheet, Text, View, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import { deleteHomework } from '@/service/deleteHomework';
 import { getHomework } from '@/service/getHomework';
-import { useAuth } from '@/contexts/AuthContext';
+import insertHomework from '@/service/insertHomework';
+import { Feather } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Alert, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { HomeworkModal } from './HomeworkModal';
 
 type DotsModalProps = {
@@ -22,7 +23,15 @@ export const DotsModal = ({ visible, homework_id, onClose }: DotsModalProps) => 
     const [subject, setSubject] = useState('');
     const [assignment, setAssignment] = useState('');
     const [date, setDate] = useState('');
-    const [editingHomeworkId, setEditingHomeworkId] = useState<number | null>(null);
+
+    const handleSubmit = () => {
+        if (subject && assignment) {
+            insertHomework(user!.id, subject, date, assignment);
+            setModalVisible(false);
+            } else {
+                Alert.alert("Incomplete Form", "Please fill out all fields.");
+            }
+        };
 
     const handleDeletePress = () => {
         Alert.alert(
@@ -48,6 +57,7 @@ export const DotsModal = ({ visible, homework_id, onClose }: DotsModalProps) => 
     const handleEditPress = async() => {
         onClose();
         const {error, Homework} = await getHomework(user! ,homework_id);
+        deleteHomework(homework_id);
         <HomeworkModal 
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -58,6 +68,7 @@ export const DotsModal = ({ visible, homework_id, onClose }: DotsModalProps) => 
         date={Homework.date}
         onDateChange={setDate}
         onSubmit={handleSubmit}/>
+        
     };
 
     if (!visible) {

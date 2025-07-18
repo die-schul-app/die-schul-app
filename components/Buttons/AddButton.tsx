@@ -6,7 +6,7 @@ import insertHomework from '@/service/insertHomework';
 import { FontAwesome6 } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
-import { HomeworkModal } from '../HomeworkModal';
+import { HomeworkModal } from '../Modals/HomeworkModal';
 
 const AddButton = () => {
     const { theme } = useTheme();
