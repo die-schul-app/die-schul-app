@@ -73,6 +73,7 @@ export default function Homework() {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <HomeworkBox
+                        homework_id={item.id} 
                         Subject={item.subject}
                         Text={item.to_do}
                         date={formatDate(item.due_date)}

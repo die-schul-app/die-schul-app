@@ -1,131 +1,68 @@
-import ModernTextBox from '@/components/ModernTextBox'
-import { Colors } from '@/constants/Colors'
-import { useAuth } from '@/contexts/AuthContext'
-import { useTheme } from '@/contexts/ThemeContext'
-import getCurrentDate from '@/service/Date/getCurrentDate'
-import insertHomework from '@/service/insertHomework'
-import { FontAwesome6 } from '@expo/vector-icons'
-import React, { useRef, useState } from 'react'
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
+import { Colors } from '@/constants/Colors';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import getCurrentDate from '@/service/Date/getCurrentDate';
+import insertHomework from '@/service/insertHomework';
+import { FontAwesome6 } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { HomeworkModal } from '../HomeworkModal';
 
 const AddButton = () => {
-    const {theme} = useTheme()
-    const colors = theme === 'light' ? Colors.light : Colors.dark
-    const {user} = useAuth()
-    const [modalVisible, setModalVisible] = useState(false)
-    const [inputText, setInputText] = useState('')
-    const [inputAssign, setInputAssign] = useState('')
-    const [inputDate, setInputDate] = useState(getCurrentDate())
-    const inputRef = useRef(null)
+    const { theme } = useTheme();
+    const colors = theme === 'light' ? Colors.light : Colors.dark;
+    const { user } = useAuth();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [subject, setSubject] = useState('');
+    const [assignment, setAssignment] = useState('');
+    const [date, setDate] = useState(getCurrentDate());
 
-    const handlePress = () => {
-        if (inputText && inputAssign !== '') {
-            if (user) {
-                insertHomework(user.id , inputText, inputDate, inputAssign).then()
-                setModalVisible(false)
-                setInputText('')
-            } else {
-                console.log("You're not logged in")
-            }
+    const handleSubmit = () => {
+        if (subject && assignment) {
+            insertHomework(user!.id, subject, date, assignment);
+            setModalVisible(false);
         } else {
-            console.log("Pls fill out all fields")
+            Alert.alert("Incomplete Form", "Please fill out all fields.");
         }
-    }
+    };
 
     const openModal = () => {
-        setInputText('')
-        setInputAssign('')
-        setInputDate(getCurrentDate())
-        setModalVisible(true)
-    }
+        if (user) {
+            setSubject('');
+            setAssignment('');
+            setDate(getCurrentDate());
+            setModalVisible(true);
+        } else {
+            Alert.alert("Login Required", "You must be logged in to add homework.");
+        }
+    };
 
     return (
-        <SafeAreaProvider>
-            <SafeAreaView style={styles.container}>
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalVisible}
-                    onRequestClose={() => setModalVisible(false)}
-                >
-                    <Pressable
-                        style={styles.modalOverlay}
-                        onPress={() => setModalVisible(false)}
-                    >
-                        <Pressable
-                            style={[styles.modalView, {backgroundColor: colors.background}]}
-                            onPress={( e ) => e.stopPropagation()}
-                        >
-                            <View style={styles.inputGroup}>
-                                <Text style={[styles.infoText, {color: colors.text}]}>Subject</Text>
-                                <ModernTextBox
-                                    HolderPlace="Type your Subject"
-                                    value={inputText}
-                                    onChangeText={setInputText}
-                                    ref={inputRef}
-                                />
-                            </View>
+        <View style={styles.container}> 
+            <HomeworkModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                subject={subject}
+                onSubjectChange={setSubject}
+                assignment={assignment}
+                onAssignmentChange={setAssignment}
+                date={date}
+                onDateChange={setDate}
+                onSubmit={handleSubmit}/>
 
-                            <View style={styles.inputGroup}>
-                                <Text style={[styles.infoText, {color: colors.text}]}>Homework</Text>
-                                <ModernTextBox
-                                    HolderPlace="Type your Assignment"
-                                    value={inputAssign}
-                                    onChangeText={setInputAssign}
-                                    ref={inputRef}
-                                />
-                            </View>
-
-                            <View style={styles.inputGroup}>
-                                <Text style={[styles.infoText, {color: colors.text}]}>Date</Text>
-                                <ModernTextBox
-                                    HolderPlace=""
-                                    value={inputDate}
-                                    onChangeText={setInputDate}
-                                />
-                            </View>
-
-                            <Pressable
-                                style={[styles.button, styles.buttonClose, {backgroundColor: colors.tint}]}
-                                onPress={handlePress}
-                            >
-                                <Text style={[styles.textStyle, {color: colors.background}]}>Add Homework</Text>
-                            </Pressable>
-                        </Pressable>
-                    </Pressable>
-                </Modal>
-
-                <Pressable
-                    style={({ pressed }) => [styles.addButton, {backgroundColor: pressed ? colors.tint : colors.primary}]}
-                    onPress={openModal}
-                >
-                    <FontAwesome6 name="plus" size={24} color={colors.background}/>
-                </Pressable>
-            </SafeAreaView>
-        </SafeAreaProvider>
-    )
-}
+            <Pressable
+                style={({ pressed }) => [styles.addButton, { backgroundColor: pressed ? colors.tint : colors.primary }]} onPress={openModal}>
+                <FontAwesome6 name="plus" size={24} color={colors.background} />
+            </Pressable>
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalView: {
-        margin: 20,
-        borderRadius: 20,
-        padding: 35,
-        alignItems: 'center',
-        elevation: 5,
-        width: '70%',
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
     },
     addButton: {
         alignItems: 'center',
@@ -133,34 +70,9 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         borderRadius: 30,
-        position: 'absolute',
-        bottom: 20,
-        right: 20,
+        margin: 20,
         elevation: 8,
     },
-    button: {
-        borderRadius: 20,
-        padding: 10,
-    },
-    buttonClose: {
-        marginTop: 3,
-        width: 150,
-    },
-    textStyle: {
-        color: 'white',
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    infoText: {
-        fontSize: 16,
-        fontWeight: '500',
-        marginBottom: 4,
-    },
-    inputGroup: {
-        width: '100%',
-        marginBottom: 10,
-    },
-})
+});
 
-export default AddButton
-
+export default AddButton;

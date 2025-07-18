@@ -1,10 +1,14 @@
 import { supabase } from '@/config/supabaseClient'
-import { User } from '@supabase/supabase-js'
 
-export const deleteHomework = async(user: User)  => {
+export const deleteHomework = async(homework_id: number)  => {
 
     const {data, error} = await supabase
         .from('homework')  
         .delete()  
-        .eq('id', user.id)
+        .eq('id', homework_id)
+
+    if (error){
+        console.error("Homework couldn't be deleted because: ", error);
+    }
+    return {data, error}
 }

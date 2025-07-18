@@ -9,6 +9,7 @@ type BoxProps = {
     Subject: string;
     Text: string;
     date: string;
+    homework_id: number;
 };
 
 const HomeworkBox = (prop: BoxProps) => {
@@ -27,7 +28,7 @@ const HomeworkBox = (prop: BoxProps) => {
                 </View>
                 <View style={styles.threeDotsWrapper}>
                     <Threedots handlePress={openModal}/>
-                    <DotsModal visible={isModalVisible} onClose ={closeModal}/>
+                    <DotsModal visible={isModalVisible} onClose ={closeModal} homework_id ={prop.homework_id}/>
                 </View>
             </View>
             <View style={[styles.innerSquare, { backgroundColor: colors.background, borderColor: colors.tint, borderWidth: 1 }]}>

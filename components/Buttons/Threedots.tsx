@@ -1,8 +1,5 @@
-import { Colors } from '@/constants/Colors';
-import { useTheme } from '@/contexts/ThemeContext';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { DotsModal } from '../DotsModal';
 type ThreedotsProps = {
     handlePress: () => void
 }
