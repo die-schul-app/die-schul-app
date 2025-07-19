@@ -3,7 +3,7 @@ import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { DotsModal } from './Modals/DotsModal';
+import { DotsModal } from '../Modals/DotsModal';
 
 type BoxProps = {
     Subject: string;

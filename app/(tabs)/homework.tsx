@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import AddButton from '@/components/Buttons/AddButton';
-import HomeworkBox from '@/components/HomeworkBox';
+import HomeworkBox from '@/components/Boxes/HomeworkBox';
 import { getHomework } from '@/service/getHomework';
 import formatDate from '@/service/Date/formatDate';
 import { useTheme } from '@/contexts/ThemeContext';

@@ -1,4 +1,4 @@
-import ModernTextBox from '@/components/ModernTextBox'
+import ModernTextBox from '@/components/Boxes/ModernTextBox'
 import { Colors } from '@/constants/Colors'
 import { useTheme } from '@/contexts/ThemeContext'
 import React from 'react'
