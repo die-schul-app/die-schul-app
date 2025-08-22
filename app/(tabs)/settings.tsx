@@ -2,6 +2,8 @@ import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import ClassDropdown from '@/components/Boxes/Dropdown_select';
+
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
@@ -25,6 +27,10 @@ export default function SettingsScreen() {
             onValueChange={toggleTheme}
             trackColor={{ false: '#767577', true: colors.primary }}
           />
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.rowText, { color: colors.text }]}>Class</Text>
+          <ClassDropdown/>
         </View>
       </View>
 
